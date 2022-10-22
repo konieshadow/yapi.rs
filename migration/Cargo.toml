@@ -1,0 +1,14 @@
+[package]
+name = "yapi-migration"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-std = { version = "^1", features = ["attributes", "tokio1"] }
+yapi-entity = { path = "../entity"}
+
+[dependencies.sea-orm-migration]
+version = "^0"
+features = [ "sqlx-sqlite", "sqlx-mysql", "runtime-tokio-native-tls" ]

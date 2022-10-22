@@ -1,0 +1,13 @@
+[package]
+name = "yapi-api"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+yapi-core = { path = "../core"}
+futures = "0.3"
+tokio = { version = "1.14.0", features = ["macros", "rt-multi-thread"] }
+axum = { version = "0.5.17", features = ["tower-log"] }
+anyhow = "1.0"

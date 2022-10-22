@@ -1,0 +1,17 @@
+[package]
+name = "yapi"
+version = "0.1.0"
+authors = ["Konie Shadow <guofengzuo@hotmail.com>"]
+edition = "2021"
+publish = false
+
+[workspace]
+members = [".", "api", "core", "entity", "migration"]
+
+[dependencies]
+yapi-migration = { path = "migration" }
+yapi-api = { path = "api" }
+yapi-core = { path = "core" }
+sea-orm = { version = "^0", features = [ "sqlx-sqlite", "sqlx-mysql", "runtime-tokio-native-tls", "macros" ] }
+dotenvy = "0.15.6"
+env_logger = "0.9.1"
