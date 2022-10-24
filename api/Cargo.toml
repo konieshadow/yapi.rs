@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 yapi-core = { path = "../core"}
 futures = "0.3"
-tokio = { version = "1.14.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.14.0", features = ["macros", "rt-multi-thread", "signal"] }
 axum = { version = "0.5.17", features = ["tower-log"] }
+log = "0.4.17"
 anyhow = "1.0"

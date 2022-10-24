@@ -1,7 +1,7 @@
 use sea_orm::entity::prelude::*;
 use serde::{Serialize, Deserialize};
 
-#[derive(Debug, Clone, PartialEq, EnumIter, Serialize, Deserialize, DeriveActiveEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, Serialize, Deserialize, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
 pub enum TypeVisible {
     #[sea_orm(string_value = "public")]
@@ -11,7 +11,7 @@ pub enum TypeVisible {
     Private,
 }
 
-#[derive(Debug, Clone, PartialEq, EnumIter, Serialize, Deserialize, DeriveActiveEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, Serialize, Deserialize, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
 pub enum MemberRole {
     #[sea_orm(string_value = "Owner")]
@@ -24,11 +24,11 @@ pub enum MemberRole {
     Visitor,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct NameValue {
     pub name: String,
     pub value: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct NameValueVec(Vec<NameValue>);

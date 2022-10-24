@@ -1,6 +1,6 @@
 use sea_orm::entity::prelude::*;
 
-#[derive(Debug, Clone, PartialEq, DeriveEntityModel)]
+#[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "user")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increament = true)]
@@ -9,7 +9,6 @@ pub struct Model {
     pub username: String,
 
     pub password: String,
-    pub passsalt: String,
 
     #[sea_orm(default_value = false)]
     pub study: bool,

@@ -2,7 +2,7 @@ use sea_orm::entity::prelude::*;
 
 use crate::base::TypeVisible;
 
-#[derive(Debug, Clone, PartialEq, DeriveEntityModel)]
+#[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "group")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increament = true)]

@@ -3,7 +3,7 @@ use serde::{Serialize, Deserialize};
 
 use crate::base::NameValue;
 
-#[derive(Debug, Clone, PartialEq, EnumIter, DeriveActiveEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
 pub enum InterfaceStatus {
     #[sea_orm(string_value = "undone")]
@@ -13,7 +13,7 @@ pub enum InterfaceStatus {
     Done,
 }
 
-#[derive(Debug, Clone, PartialEq, EnumIter, DeriveActiveEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
 pub enum ReqBodyType {
     #[sea_orm(string_value = "form")]
@@ -32,7 +32,7 @@ pub enum ReqBodyType {
     Raw,
 }
 
-#[derive(Debug, Clone, PartialEq, EnumIter, Serialize, Deserialize, DeriveActiveEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, Serialize, Deserialize, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
 pub enum FormType {
     #[sea_orm(string_value = "text")]
@@ -42,7 +42,7 @@ pub enum FormType {
     File,
 }
 
-#[derive(Debug, Clone, PartialEq, EnumIter, Serialize, Deserialize, DeriveActiveEnum)]
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, Serialize, Deserialize, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
 pub enum ResBodyType {
     #[sea_orm(string_value = "json")]
@@ -61,13 +61,13 @@ pub enum ResBodyType {
     JsonSchema,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct QueryPath {
     pub path: String,
     pub params: Vec<NameValue>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct ReqQuery {
     pub name: String,
     pub value: String,
@@ -76,10 +76,10 @@ pub struct ReqQuery {
     pub required: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct ReqQuerys(Vec<ReqQuery>);
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct ReqHeader {
     pub name: String,
     pub value: String,
@@ -88,20 +88,20 @@ pub struct ReqHeader {
     pub required: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct ReqHeaders(Vec<ReqHeader>);
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct ReqParam {
     pub name: String,
     pub example: String,
     pub desc: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct ReqParams(Vec<ReqParam>);
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct ReqBodyForm {
     pub name: String,
     pub form_type: FormType,
@@ -111,10 +111,10 @@ pub struct ReqBodyForm {
     required: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct ReqBodyForms(Vec<ReqBodyForm>);
 
-#[derive(Debug, Clone, PartialEq, DeriveEntityModel)]
+#[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "interface")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increament = true)]

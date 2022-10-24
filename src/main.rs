@@ -1,7 +1,7 @@
 use yapi_core::config;
 
 fn main() {
-    dotenvy::dotenv().ok();
+    dotenvy::dotenv().unwrap();
     env_logger::init();
 
     let config = config::get_config();

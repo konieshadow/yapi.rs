@@ -2,7 +2,7 @@ use sea_orm::entity::prelude::*;
 
 use crate::base::{MemberRole, NameValueVec};
 
-#[derive(Debug, Clone, PartialEq, DeriveEntityModel)]
+#[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "project_env")]
 pub struct Model {
 

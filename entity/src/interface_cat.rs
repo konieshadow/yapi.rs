@@ -1,6 +1,6 @@
 use sea_orm::entity::prelude::*;
 
-#[derive(Debug, Clone, PartialEq, DeriveEntityModel)]
+#[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "interface_cat")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increament = true)]

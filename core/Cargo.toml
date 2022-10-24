@@ -8,4 +8,18 @@ edition = "2021"
 [dependencies]
 yapi-entity = { path = "../entity"}
 anyhow = "1.0"
+thiserror = "1.0"
+futures = "0.3"
+tokio = { version = "1.14.0", features = ["macros", "rt-multi-thread"] }
+http-body = "0.4"
+tower = "0.4"
+axum = { version = "0.5.17", features = ["tower-log"] }
+log = "0.4.17"
 clap = { version = "4.0.18", features = ["derive", "env"] }
+argon2 = "0.4.1"
+rand = "0.8.5"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1.0"
+validator = { version = "0.16.0", features = ["derive"] }
+lazy_static = "1.4.0"
+regex = "1"
