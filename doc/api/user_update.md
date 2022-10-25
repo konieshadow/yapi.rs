@@ -17,7 +17,7 @@ Content-Type  | string | 非必须   | application/json
 
 参数名称 | 类型   | 出现要求 | 描述
 :--------|:-------|:-------|:----
-uid      | string | 必须     | 用户id
+id       | string | 必须     | 用户id
 username | string | 非必须   | 用户名
 email    | string | 非必须   | 用户名
 role     | string | 非必须   | 角色

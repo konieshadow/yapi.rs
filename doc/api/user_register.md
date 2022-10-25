@@ -28,7 +28,7 @@ password | string | 必须     | 密码
 
 参数名称 | 类型   | 出现要求 | 描述
 :--------|:-------|:-------|:-------------------------------
-uid      | int    | 必须     | 用户id
+id       | int    | 必须     | 用户id
 username | string | 必须     | 用户名
 email    | string | 必须     | 邮箱
 role     | string | 必须     | 角色
