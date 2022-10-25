@@ -8,9 +8,10 @@ POST /api/group/add_member
 
 #### 请求头
 
-参数名称 | 类型   | 出现要求 | 描述
-:--------|:-------|:-------|:---------------
-Cookie   | string | 必须     | _yapi_token=xxx
+参数名称      | 类型   | 出现要求 | 描述
+:-------------|:-------|:-------|:------------
+Authorization | string | 必须     | Token xxxxxx
+
 
 #### 请求体
 

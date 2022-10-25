@@ -8,9 +8,9 @@ GET /api/interface/list_cat
 
 #### 请求头
 
-参数名称 | 类型   | 出现要求 | 描述
-:--------|:-------|:-------|:---------------
-Cookie   | string | 必须     | _yapi_token=xxx
+参数名称      | 类型   | 出现要求 | 描述
+:-------------|:-------|:-------|:------------
+Authorization | string | 必须     | Token xxxxxx
 
 #### 查询参数
 

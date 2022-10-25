@@ -8,9 +8,10 @@ POST /api/project/del_member
 
 #### 请求头
 
-参数名称 | 类型   | 出现要求 | 描述
-:--------|:-------|:-------|:---------------
-Cookie   | string | 必须     | _yapi_token=xxx
+参数名称      | 类型   | 出现要求 | 描述
+:-------------|:-------|:-------|:------------
+Authorization | string | 必须     | Token xxxxxx
+Content-Type  | string | 非必须   | application/json
 
 #### 请求体
 
