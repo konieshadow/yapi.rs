@@ -46,7 +46,7 @@ impl Model {
             username: self.username.to_owned(),
             email: self.email.to_owned(),
             role: self.role.to_owned().into_value(),
-            user_type: String::from("site"),
+            user_type: "site".to_owned(),
             study: self.study,
             add_time: self.add_time,
             up_time: self.up_time,
@@ -59,6 +59,11 @@ impl Entity {
     pub async fn find_user_info_by_id<C>(db: &C, id: u32) -> Result<Option<UserInfo>, DbErr>
     where C: ConnectionTrait
     {
-        Entity::find_by_id(id).one(db).await.map(|m| m.map(|m| m.to_user_info()))
+        Entity::find_by_id(id)
+            .one(db)
+            .await
+            .map(|m| {
+                m.map(|m| m.to_user_info())
+            })
     }
 }

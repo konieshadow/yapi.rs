@@ -10,12 +10,12 @@ impl MigrationTrait for Migration {
 
         create_table_by_entity(manager, &schema, yapi_entity::user_entity::Entity).await;
         create_table_by_entity(manager, &schema, yapi_entity::group_entity::Entity).await;
-        create_table_by_entity(manager, &schema, yapi_entity::group_entity::Entity).await;
         create_table_by_entity(manager, &schema, yapi_entity::project_entity::Entity).await;
-        create_table_by_entity(manager, &schema, yapi_entity::project_env_entity::Entity).await;
+        create_table_by_entity(manager, &schema, yapi_entity::interface_cat_entity::Entity).await;
+        create_table_by_entity(manager, &schema, yapi_entity::interface_entity::Entity).await;
+        create_table_by_entity(manager, &schema, yapi_entity::group_member_entity::Entity).await;
         create_table_by_entity(manager, &schema, yapi_entity::project_member_entity::Entity).await;
-        create_table_by_entity(manager, &schema, yapi_entity::interface_cat_entity::Entity).await;
-        create_table_by_entity(manager, &schema, yapi_entity::interface_cat_entity::Entity).await;
+        create_table_by_entity(manager, &schema, yapi_entity::project_env_entity::Entity).await;
 
         Ok(())
     }

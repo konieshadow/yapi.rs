@@ -1,16 +1,14 @@
 use anyhow::Context;
 use argon2::{password_hash::SaltString, PasswordHash, Argon2};
-use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, PaginatorTrait, ColumnTrait, Set, Condition, TransactionTrait};
+use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, PaginatorTrait, ColumnTrait, Set, Condition, TransactionTrait, QuerySelect, FromQueryResult};
 use time::OffsetDateTime;
-use yapi_common::types::{UserReg, UserInfo};
+use yapi_common::types::{UserReg, UserInfo, UserLogin};
 use yapi_entity::user_entity::{self, UserRole};
 
 use crate::error::Error;
 use crate::Result;
 
 pub async fn reg(db: &DatabaseConnection, user_reg: UserReg) -> Result<UserInfo> {
-    log::debug!("用户注册: {:?}", user_reg);
-
     let tx = db.begin().await?;
 
     // 先查询用户名是否已存在
@@ -24,7 +22,7 @@ pub async fn reg(db: &DatabaseConnection, user_reg: UserReg) -> Result<UserInfo>
         .await?;
 
     if exist_count > 0 {
-        return Err(Error::Custom(401, String::from("该用户名或邮箱已存在")));
+        return Err(Error::Custom(401, "该用户名或邮箱已存在".to_owned()));
     }
 
     // 加密密码
@@ -48,6 +46,35 @@ pub async fn reg(db: &DatabaseConnection, user_reg: UserReg) -> Result<UserInfo>
     let user_info = user_entity::Entity::find_user_info_by_id(&tx, user_id).await?.expect("must insert successful");
 
     tx.commit().await?;
+
+    Ok(user_info)
+}
+
+pub async fn login(db: &DatabaseConnection, user_login: UserLogin) -> Result<UserInfo> {
+    #[derive(FromQueryResult)]
+    struct QueryAs {
+        id: u32,
+        password: String,
+    }
+
+    let user = user_entity::Entity::find()
+        .select_only()
+        .column(user_entity::Column::Id)
+        .column(user_entity::Column::Password)
+        .filter(user_entity::Column::Email.eq(user_login.email))
+        .into_model::<QueryAs>()
+        .one(db)
+        .await?
+        .ok_or_else(|| Error::NotFound("用户不存在".to_owned()))?;
+
+    let password_matched = verify_password(user_login.password, user.password)
+        .await?;
+    
+    if !password_matched {
+        return Err(Error::Custom(405, "密码不正确".to_owned()));
+    }
+
+    let user_info = user_entity::Entity::find_user_info_by_id(db, user.id).await?.expect("should be exist user");
 
     Ok(user_info)
 }

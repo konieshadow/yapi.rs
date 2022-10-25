@@ -16,7 +16,7 @@ impl <T> ResData<T> {
     }
 
     pub fn success(data: T) -> Self {
-        ResData { errcode: 0, errmsg: String::from(MSG_SUCCESS), data: Some(data) }
+        ResData { errcode: 0, errmsg: MSG_SUCCESS.to_owned(), data: Some(data) }
     }
 
     pub fn error(errcode: i32, errmsg: String) -> Self {

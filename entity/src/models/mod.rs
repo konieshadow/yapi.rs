@@ -21,7 +21,7 @@ pub mod project_entity {
 }
 
 pub mod interface_cat_entity {
-    pub use super::interface::*;
+    pub use super::interface_cat::*;
 }
 
 pub mod interface_entity {

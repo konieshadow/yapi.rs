@@ -81,19 +81,19 @@ impl Error {
     fn errmsg(&self) -> String {
         match self {
             Self::Custom(_, msg) => msg.to_owned(),
-            Self::BadRequest => String::from(MSG_BAD_REQUEST),
-            Self::Unauthorized => String::from(MSG_UNAUTHORIZED),
-            Self::Forbidden => String::from(MSG_FORBIDDEN),
+            Self::BadRequest => MSG_BAD_REQUEST.to_owned(),
+            Self::Unauthorized => MSG_UNAUTHORIZED.to_owned(),
+            Self::Forbidden => MSG_FORBIDDEN.to_owned(),
             Self::NotFound(msg) => {
                 if msg.is_empty() {
-                    String::from(MSG_NOT_FOUND)
+                    MSG_NOT_FOUND.to_owned()
                 } else {
                     msg.to_owned()
                 }
             }
             Self::UnprocessableEntity { errors } => {
                 if errors.is_empty() {
-                    String::from(MSG_UNPROCESSABLE_ENTITY)
+                    MSG_UNPROCESSABLE_ENTITY.to_owned()
                 } else {
                     format!(
                         "{} {}",
@@ -109,7 +109,7 @@ impl Error {
                     serde_json::to_string(err).expect("panic when serialize to json")
                 )
             }
-            _ => String::from(MSG_ANYHOW),
+            _ => MSG_ANYHOW.to_owned(),
         }
     }
 }
