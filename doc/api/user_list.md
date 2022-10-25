@@ -28,7 +28,7 @@ limit    | int  | 非必须   | 每页数量
 count          | int    | 必须     | 总数量
 total          | int    | 必须     | 总页数
 list[]         | Array  | 必须     | 列表
-&emsp;_id      | int    | 必须     | 接口id
+&emsp;id      | int    | 必须     | 接口id
 &emsp;username | string | 必须     | 用户名
 &emsp;email    | string | 必须     | 邮箱
 &emsp;role     | string | 必须     | 角色

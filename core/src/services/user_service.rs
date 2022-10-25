@@ -1,8 +1,11 @@
 use anyhow::Context;
-use argon2::{password_hash::SaltString, PasswordHash, Argon2};
-use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, PaginatorTrait, ColumnTrait, Set, Condition, TransactionTrait, QuerySelect, FromQueryResult};
+use argon2::{password_hash::SaltString, Argon2, PasswordHash};
+use sea_orm::{
+    ColumnTrait, Condition, DatabaseConnection, EntityTrait, FromQueryResult, ItemsAndPagesNumber,
+    PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, Set, TransactionTrait,
+};
 use time::OffsetDateTime;
-use yapi_common::types::{UserReg, UserInfo, UserLogin};
+use yapi_common::types::{PageList, Paginator, UserInfo, UserLogin, UserReg};
 use yapi_entity::user_entity::{self, UserRole};
 
 use crate::error::Error;
@@ -16,8 +19,8 @@ pub async fn reg(db: &DatabaseConnection, user_reg: UserReg) -> Result<UserInfo>
         .filter(
             Condition::any()
                 .add(user_entity::Column::Username.eq(user_reg.username.to_owned()))
-                .add(user_entity::Column::Email.eq(user_reg.email.to_owned())
-        ))
+                .add(user_entity::Column::Email.eq(user_reg.email.to_owned())),
+        )
         .count(&tx)
         .await?;
 
@@ -41,9 +44,14 @@ pub async fn reg(db: &DatabaseConnection, user_reg: UserReg) -> Result<UserInfo>
         ..Default::default()
     };
 
-    let user_id = user_entity::Entity::insert(user).exec(&tx).await?.last_insert_id;
+    let user_id = user_entity::Entity::insert(user)
+        .exec(&tx)
+        .await?
+        .last_insert_id;
 
-    let user_info = user_entity::Entity::find_user_info_by_id(&tx, user_id).await?.expect("must insert successful");
+    let user_info = user_entity::Entity::find_user_info_by_id(&tx, user_id)
+        .await?
+        .expect("must insert successful");
 
     tx.commit().await?;
 
@@ -67,14 +75,15 @@ pub async fn login(db: &DatabaseConnection, user_login: UserLogin) -> Result<Use
         .await?
         .ok_or_else(|| Error::NotFound("用户不存在".to_owned()))?;
 
-    let password_matched = verify_password(user_login.password, user.password)
-        .await?;
-    
+    let password_matched = verify_password(user_login.password, user.password).await?;
+
     if !password_matched {
         return Err(Error::Custom(405, "密码不正确".to_owned()));
     }
 
-    let user_info = user_entity::Entity::find_user_info_by_id(db, user.id).await?.expect("should be exist user");
+    let user_info = user_entity::Entity::find_user_info_by_id(db, user.id)
+        .await?
+        .expect("should be exist user");
 
     Ok(user_info)
 }
@@ -89,12 +98,35 @@ pub async fn status(db: &DatabaseConnection, user_id: Option<u32>) -> Result<Use
     Ok(user_info)
 }
 
+pub async fn list(db: &DatabaseConnection, paginator: Paginator) -> Result<PageList<UserInfo>> {
+    let ItemsAndPagesNumber {
+        number_of_items: count,
+        number_of_pages: total,
+    } = user_entity::Entity::find()
+        .order_by_desc(user_entity::Column::Id)
+        .paginate(db, paginator.page_size())
+        .num_items_and_pages()
+        .await?;
+
+    let list: Vec<UserInfo> = user_entity::Entity::find()
+        .order_by_desc(user_entity::Column::Id)
+        .paginate(db, paginator.page_size())
+        .fetch_page(paginator.page())
+        .await?
+        .into_iter().map(|m| m.to_user_info())
+        .collect();
+
+    Ok(PageList::new(count, total, list))
+}
+
 async fn hash_password(password: String) -> anyhow::Result<String> {
     tokio::task::spawn_blocking(move || -> anyhow::Result<String> {
         let salt = SaltString::generate(rand::thread_rng());
-        Ok(PasswordHash::generate(Argon2::default(), password, salt.as_str())
-            .map_err(|e| anyhow::anyhow!("failed to geenerate password hash: {}", e))?
-            .to_string())
+        Ok(
+            PasswordHash::generate(Argon2::default(), password, salt.as_str())
+                .map_err(|e| anyhow::anyhow!("failed to geenerate password hash: {}", e))?
+                .to_string(),
+        )
     })
     .await
     .context("panic in generate password hash")?
@@ -106,15 +138,9 @@ async fn verify_password(password: String, password_hash: String) -> anyhow::Res
             .map_err(|e| anyhow::anyhow!("invalid password hash: {}", e))?;
 
         match hash.verify_password(&[&Argon2::default()], password) {
-            Ok(()) => {
-                Ok(true)
-            },
-            Err(e) if e == argon2::password_hash::Error::Password => {
-                Ok(false)
-            },
-            Err(e) => {
-                Err(anyhow::anyhow!("falied to verify password hash: {}", e))
-            }
+            Ok(()) => Ok(true),
+            Err(e) if e == argon2::password_hash::Error::Password => Ok(false),
+            Err(e) => Err(anyhow::anyhow!("falied to verify password hash: {}", e)),
         }
     })
     .await
