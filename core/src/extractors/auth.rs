@@ -94,11 +94,35 @@ where
             .await
             .expect("context was not added as extensions");
 
-        let auth_header = req
+        req
             .headers()
             .get(header::AUTHORIZATION)
-            .ok_or(Error::Unauthorized)?;
+            .map(|auth_header| AuthUser::from_authorization(&ctx.config.hmac_key, auth_header))
+            .ok_or(Error::Unauthorized)?
+    }
+}
 
-        Self::from_authorization(&ctx.config.hmac_key, auth_header)
+#[async_trait]
+impl <B> FromRequest<B> for MaybeAuthUser
+where
+    B: http_body::Body + Send,
+    B::Data: Send,
+    B::Error: Into<tower::BoxError>,
+{
+    type Rejection = Error;
+
+    async fn from_request(req: &mut RequestParts<B>) -> Result<Self, Self::Rejection> {
+        let ctx: Extension<Context> = Extension::from_request(req)
+            .await
+            .expect("context was not added as extensions");
+
+        let maybe_auth_user = req
+            .headers()
+            .get(header::AUTHORIZATION)
+            .map(|auth_header| AuthUser::from_authorization(&ctx.config.hmac_key, auth_header))
+            .transpose()?
+            .map_or_else(|| MaybeAuthUser(None), |auth_user| MaybeAuthUser(Some(auth_user)));
+
+        Ok(maybe_auth_user)
     }
 }

@@ -1,7 +1,8 @@
 use axum::Extension;
+use axum::routing::get;
 use axum::{Router, routing::post};
-use yapi_common::types::{UserReg, AuthUserInfo, UserLogin};
-use yapi_core::extractors::auth::AuthUser;
+use yapi_common::types::{UserReg, AuthUserInfo, UserLogin, UserInfo};
+use yapi_core::extractors::auth::{AuthUser, MaybeAuthUser};
 use yapi_core::extractors::json::ValidateJson;
 use yapi_core::{Result, res::ResData};
 use yapi_core::services::user_service;
@@ -12,6 +13,7 @@ pub fn router() -> Router {
     Router::new()
         .route("/user/reg", post(reg))
         .route("/user/login", post(login))
+        .route("/user/status", get(status))
 }
 
 async fn reg(
@@ -20,7 +22,7 @@ async fn reg(
 ) -> Result<ResData<AuthUserInfo>> {
     let data = user_service::reg(&ctx.db, req).await?;
 
-    let token = AuthUser::new(data.uid).to_jwt(&ctx.config.hmac_key);
+    let token = AuthUser::new(data.id).to_jwt(&ctx.config.hmac_key);
 
     Ok(ResData::success(AuthUserInfo {
         user_info: data,
@@ -34,10 +36,19 @@ async fn login(
 ) -> Result<ResData<AuthUserInfo>> {
     let data = user_service::login(&ctx.db, req).await?;
 
-    let token = AuthUser::new(data.uid).to_jwt(&ctx.config.hmac_key);
+    let token = AuthUser::new(data.id).to_jwt(&ctx.config.hmac_key);
 
     Ok(ResData::success(AuthUserInfo {
         user_info: data,
         token,
     }))
+}
+
+async fn status(
+    ctx: Extension<Context>,
+    maybe_auth_user: MaybeAuthUser,
+) -> Result<ResData<UserInfo>> {
+    let data = user_service::status(&ctx.db, maybe_auth_user.user_id()).await?;
+
+    Ok(ResData::success(data))
 }

@@ -79,6 +79,16 @@ pub async fn login(db: &DatabaseConnection, user_login: UserLogin) -> Result<Use
     Ok(user_info)
 }
 
+pub async fn status(db: &DatabaseConnection, user_id: Option<u32>) -> Result<UserInfo> {
+    let user_id = user_id.ok_or(Error::Unauthorized)?;
+
+    let user_info = user_entity::Entity::find_user_info_by_id(db, user_id)
+        .await?
+        .ok_or(Error::Unauthorized)?;
+
+    Ok(user_info)
+}
+
 async fn hash_password(password: String) -> anyhow::Result<String> {
     tokio::task::spawn_blocking(move || -> anyhow::Result<String> {
         let salt = SaltString::generate(rand::thread_rng());

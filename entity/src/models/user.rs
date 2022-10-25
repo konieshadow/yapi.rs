@@ -42,7 +42,7 @@ impl ActiveModelBehavior for ActiveModel {}
 impl Model {
     pub fn to_user_info(&self) -> UserInfo {
         UserInfo {
-            uid: self.id,
+            id: self.id,
             username: self.username.to_owned(),
             email: self.email.to_owned(),
             role: self.role.to_owned().into_value(),

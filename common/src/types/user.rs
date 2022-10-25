@@ -8,7 +8,7 @@ lazy_static! {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserInfo {
-    pub uid: u32,
+    pub id: u32,
     pub username: String,
     pub email: String,
     pub role: String,
