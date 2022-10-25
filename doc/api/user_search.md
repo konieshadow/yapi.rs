@@ -22,15 +22,15 @@ q        | string | 必须     | 关键词
 
 #### 响应体
 
-参数名称 | 类型   | 出现要求 | 描述
-:--------|:-------|:-------|:-----
-[]       | Array  | 必须     | 用户列表
-id       | int    | 必须     | 用户id
-username | string | 必须     | 用户名
-email    | string | 必须     | 邮箱
-role     | string | 必须     | 角色
-add_time | int    | 必须     | 创建时间戳
-up_time  | int    | 必须     | 更新时间戳
+参数名称       | 类型   | 出现要求 | 描述
+:--------------|:-------|:-------|:-----
+[]             | Array  | 必须     | 用户列表
+&emsp;id       | int    | 必须     | 用户id
+&emsp;username | string | 必须     | 用户名
+&emsp;email    | string | 必须     | 邮箱
+&emsp;role     | string | 必须     | 角色
+&emsp;add_time | int    | 必须     | 创建时间戳
+&emsp;up_time  | int    | 必须     | 更新时间戳
 
 ### 响应码说明
 

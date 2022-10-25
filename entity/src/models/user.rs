@@ -1,6 +1,6 @@
 use sea_orm::{entity::prelude::*, ConnectionTrait};
 use serde::{Deserialize, Serialize};
-use yapi_common::types::UserInfo;
+use yapi_common::types::{UserInfo, UserSearch};
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumIter, Serialize, Deserialize, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
@@ -48,6 +48,17 @@ impl Model {
             role: self.role.to_owned().into_value(),
             user_type: "site".to_owned(),
             study: self.study,
+            add_time: self.add_time,
+            up_time: self.up_time,
+        }
+    }
+
+    pub fn to_user_search(&self) -> UserSearch {
+        UserSearch {
+            id: self.id,
+            username: self.username.to_owned(),
+            email: self.email.to_owned(),
+            role: self.role.to_owned().into_value(),
             add_time: self.add_time,
             up_time: self.up_time,
         }

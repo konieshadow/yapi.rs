@@ -29,6 +29,16 @@ pub struct AuthUserInfo {
     pub token: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UserSearch {
+    pub id: u32,
+    pub username: String,
+    pub email: String,
+    pub role: String,
+    pub add_time: u32,
+    pub up_time: u32,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct UserReg {
     #[validate(length(min = 2, max = 18, message = "长度必须在2到18之间"))]

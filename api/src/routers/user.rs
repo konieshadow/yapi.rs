@@ -2,7 +2,7 @@ use axum::extract::Query;
 use axum::{Extension};
 use axum::routing::get;
 use axum::{Router, routing::post};
-use yapi_common::types::{UserReg, AuthUserInfo, UserLogin, UserInfo, PageList, Paginator};
+use yapi_common::types::{UserReg, AuthUserInfo, UserLogin, UserInfo, PageList, Paginator, Search, UserSearch};
 use yapi_core::extractors::auth::{AuthUser, MaybeAuthUser};
 use yapi_core::extractors::json::ValidateJson;
 use yapi_core::{Result, res::ResData};
@@ -16,6 +16,7 @@ pub fn router() -> Router {
         .route("/user/login", post(login))
         .route("/user/status", get(status))
         .route("/user/list", get(list))
+        .route("/user/search", get(search))
 }
 
 async fn reg(
@@ -61,6 +62,16 @@ async fn list(
     Query(req): Query<Paginator>,
 ) -> Result<ResData<PageList<UserInfo>>> {
     let data = user_service::list(&ctx.db, req).await?;
+
+    Ok(ResData::success(data))
+}
+
+async fn search(
+    ctx: Extension<Context>,
+    _: AuthUser,
+    Query(req): Query<Search>,
+) -> Result<ResData<Vec<UserSearch>>> {
+    let data = user_service::search(&ctx.db, req.q.as_str()).await?;
 
     Ok(ResData::success(data))
 }

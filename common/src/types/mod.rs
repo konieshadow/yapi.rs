@@ -46,3 +46,8 @@ impl <T> PageList<T> {
         PageList { count, total, list }
     }
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Search {
+    pub q: String,
+}

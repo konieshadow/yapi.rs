@@ -5,7 +5,7 @@ use sea_orm::{
     PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, Set, TransactionTrait,
 };
 use time::OffsetDateTime;
-use yapi_common::types::{PageList, Paginator, UserInfo, UserLogin, UserReg};
+use yapi_common::types::{PageList, Paginator, UserInfo, UserLogin, UserReg, UserSearch};
 use yapi_entity::user_entity::{self, UserRole};
 
 use crate::error::Error;
@@ -117,6 +117,24 @@ pub async fn list(db: &DatabaseConnection, paginator: Paginator) -> Result<PageL
         .collect();
 
     Ok(PageList::new(count, total, list))
+}
+
+pub async fn search(db: &DatabaseConnection, search: &str) -> Result<Vec<UserSearch>> {
+    let keyworkd = format!("%{}%", search);
+    let list: Vec<UserSearch> = user_entity::Entity::find()
+        .filter(
+            Condition::any()
+                .add(user_entity::Column::Username.like(keyworkd.as_str()))
+                .add(user_entity::Column::Email.like(keyworkd.as_str()))
+        )
+        .order_by_desc(user_entity::Column::Id)
+        .limit(50)
+        .all(db)
+        .await?
+        .into_iter().map(|m| m.to_user_search())
+        .collect();
+
+    Ok(list)
 }
 
 async fn hash_password(password: String) -> anyhow::Result<String> {
