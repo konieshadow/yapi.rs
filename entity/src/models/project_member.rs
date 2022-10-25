@@ -1,13 +1,13 @@
 use sea_orm::entity::prelude::*;
 
-use crate::base::MemberRole;
+use super::base::MemberRole;
 
 #[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
-#[sea_orm(table_name = "group_member")]
+#[sea_orm(table_name = "project_member")]
 pub struct Model {
 
     #[sea_orm(primary_key)]
-    pub group_id: u32,
+    pub project_id: u32,
 
     #[sea_orm(primary_key)]
     pub uid: u32,

@@ -1,10 +1,56 @@
 use anyhow::Context;
 use argon2::{password_hash::SaltString, PasswordHash, Argon2};
+use sea_orm::{DatabaseConnection, EntityTrait, QueryFilter, PaginatorTrait, ColumnTrait, Set, Condition, TransactionTrait};
+use time::OffsetDateTime;
+use yapi_common::types::{UserReg, UserInfo};
+use yapi_entity::models::user::UserRole;
+use yapi_entity::models::{User, UserConlumns, UserModel};
 
-use crate::types::UserReg;
+use crate::error::Error;
+use crate::Result;
 
-pub async fn reg(user_reg: UserReg) {
+pub async fn reg(db: &DatabaseConnection, user_reg: UserReg) -> Result<UserInfo> {
     log::debug!("用户注册: {:?}", user_reg);
+
+    let tx = db.begin().await?;
+
+    // 先查询用户名是否已存在
+    let exist_count = User::find()
+        .filter(
+            Condition::any()
+                .add(UserConlumns::Username.eq(user_reg.username.to_owned()))
+                .add(UserConlumns::Email.eq(user_reg.email.to_owned())
+        ))
+        .count(&tx)
+        .await?;
+
+    if exist_count > 0 {
+        return Err(Error::Custom(401, String::from("该用户名或邮箱已存在")));
+    }
+
+    // 加密密码
+    let password = hash_password(user_reg.password).await?;
+
+    let timestamp = OffsetDateTime::now_utc().unix_timestamp() as u32;
+
+    // 插入记录
+    let user = UserModel {
+        username: Set(user_reg.username.to_owned()),
+        email: Set(user_reg.email.to_owned()),
+        password: Set(password),
+        role: Set(UserRole::Member),
+        add_time: Set(timestamp),
+        up_time: Set(timestamp),
+        ..Default::default()
+    };
+
+    let user_id = User::insert(user).exec(&tx).await?.last_insert_id;
+
+    let user_info = User::find_user_info_by_id(&tx, user_id).await?.expect("must insert successful");
+
+    tx.commit().await?;
+
+    Ok(user_info)
 }
 
 async fn hash_password(password: String) -> anyhow::Result<String> {

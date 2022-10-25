@@ -1,6 +1,6 @@
 use sea_orm::entity::prelude::*;
 
-use crate::base::TypeVisible;
+use super::base::TypeVisible;
 
 #[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "project")]

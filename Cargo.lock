@@ -2853,9 +2853,12 @@ checksum = "c811ca4a8c853ef420abd8592ba53ddbbac90410fab6903b3e79972a631f7680"
 name = "yapi"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "dotenvy",
  "env_logger",
+ "log",
  "sea-orm",
+ "tokio",
  "yapi-api",
  "yapi-core",
  "yapi-migration",
@@ -2869,8 +2872,22 @@ dependencies = [
  "axum",
  "futures",
  "log",
+ "sea-orm",
+ "serde",
+ "serde_json",
  "tokio",
+ "yapi-common",
  "yapi-core",
+]
+
+[[package]]
+name = "yapi-common"
+version = "0.1.0"
+dependencies = [
+ "lazy_static",
+ "regex",
+ "serde",
+ "validator",
 ]
 
 [[package]]
@@ -2887,12 +2904,15 @@ dependencies = [
  "log",
  "rand",
  "regex",
+ "sea-orm",
  "serde",
  "serde_json",
  "thiserror",
+ "time",
  "tokio",
  "tower",
  "validator",
+ "yapi-common",
  "yapi-entity",
 ]
 
@@ -2900,9 +2920,12 @@ dependencies = [
 name = "yapi-entity"
 version = "0.1.0"
 dependencies = [
+ "log",
  "sea-orm",
  "serde",
  "serde_json",
+ "time",
+ "yapi-common",
 ]
 
 [[package]]

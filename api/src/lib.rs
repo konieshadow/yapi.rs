@@ -1,22 +1,35 @@
 mod routers;
 
-use std::net::SocketAddr;
+use std::{net::SocketAddr, sync::Arc};
 
 use crate::routers::routers;
-use axum::Server;
+use axum::{Server, Extension};
+use sea_orm::DatabaseConnection;
 use yapi_core::config::Config;
 
-#[tokio::main]
-async fn start(addr: String) -> anyhow::Result<()> {
-    let app = routers();
-    let addr: SocketAddr = addr.parse().unwrap();
+#[derive(Debug, Clone)]
+pub struct Context {
+    config: Arc<Config>,
+    db: DatabaseConnection,
+}
 
-    log::info!("Server is listening on {}", addr);
+pub async fn start(config: Config, db: DatabaseConnection) -> anyhow::Result<()> {
+    let context = Context {
+        config: Arc::new(config.to_owned()),
+        db,
+    };
+
+    let app = routers()
+        .layer(Extension(context));
+
+    let addr: SocketAddr = config.server_addr.parse().unwrap();
 
     let server = Server::bind(&addr)
         .serve(app.into_make_service());
 
     let graceful = server.with_graceful_shutdown(shutdown_signal());
+    
+    log::info!("server is listening on {}", addr);
 
     if let Err(e) = graceful.await {
         eprintln!("server error: {}", e);
@@ -30,12 +43,4 @@ async fn shutdown_signal() {
     tokio::signal::ctrl_c()
         .await
         .expect("failed to install CTRL+C signal handler");
-}
-
-pub fn main(config: Config) {
-    let result = start(config.server_addr);
-
-    if let Some(err) = result.err() {
-        println!("Error: {}", err);
-    }
 }

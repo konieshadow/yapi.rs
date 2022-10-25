@@ -18,7 +18,7 @@ const MSG_ANYHOW: &str = "服务器异常";
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("error with custum code and message")]
-    Custom { code: i32, msg: String },
+    Custom(i32, String),
 
     #[error("bad request")]
     BadRequest,
@@ -30,7 +30,7 @@ pub enum Error {
     Forbidden,
 
     #[error("request resource not found")]
-    NotFound { msg: String },
+    NotFound(String),
 
     #[error("error in the request body")]
     UnprocessableEntity {
@@ -39,6 +39,9 @@ pub enum Error {
 
     #[error("error when validate request payload")]
     ValidatorError(#[from] validator::ValidationErrors),
+
+    #[error("error when query database")]
+    DbError(#[from] sea_orm::DbErr),
 
     #[error("an internal server error occurred")]
     Anyhow(#[from] anyhow::Error),
@@ -64,28 +67,28 @@ impl Error {
 
     fn errcode(&self) -> i32 {
         match self {
-            Self::Custom { code, .. } => *code,
+            Self::Custom(code, _) => *code,
             Self::BadRequest => 400,
-            Self::Unauthorized => 401,
-            Self::Forbidden => 403,
+            Self::Unauthorized => 40011,
+            Self::Forbidden => 40013,
             Self::NotFound { .. } => 404,
-            Self::UnprocessableEntity { .. } => 422,
-            Self::ValidatorError(_) => 422,
-            Self::Anyhow(_) => 500,
+            Self::UnprocessableEntity { .. } => 400,
+            Self::ValidatorError(_) => 400,
+            _=> 500,
         }
     }
 
     fn errmsg(&self) -> String {
         match self {
-            Self::Custom { msg, .. } => msg.clone(),
+            Self::Custom(_, msg) => msg.to_owned(),
             Self::BadRequest => String::from(MSG_BAD_REQUEST),
             Self::Unauthorized => String::from(MSG_UNAUTHORIZED),
             Self::Forbidden => String::from(MSG_FORBIDDEN),
-            Self::NotFound { msg } => {
+            Self::NotFound(msg) => {
                 if msg.is_empty() {
                     String::from(MSG_NOT_FOUND)
                 } else {
-                    msg.clone()
+                    msg.to_owned()
                 }
             }
             Self::UnprocessableEntity { errors } => {
@@ -106,13 +109,23 @@ impl Error {
                     serde_json::to_string(err).expect("panic when serialize to json")
                 )
             }
-            Self::Anyhow(_) => String::from(MSG_ANYHOW),
+            _ => String::from(MSG_ANYHOW),
         }
     }
 }
 
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
+        match self {
+            Self::DbError(ref e) => {
+                log::error!("db error: {:?}", e);
+            },
+            Self::Anyhow(ref e) => {
+                log::error!("generic error: {:?}", e);
+            }
+            _ => {}
+        }
+
         let res_data: ResData<()> = ResData::error(self.errcode(), self.errmsg());
         (StatusCode::OK, Json(res_data)).into_response()
     }

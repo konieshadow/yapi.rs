@@ -8,14 +8,14 @@ impl MigrationTrait for Migration {
         let builder = manager.get_database_backend();
         let schema = Schema::new(builder);
 
-        create_table_by_entity(manager, &schema, yapi_entity::user::Entity).await;
-        create_table_by_entity(manager, &schema, yapi_entity::group::Entity).await;
-        create_table_by_entity(manager, &schema, yapi_entity::group_member::Entity).await;
-        create_table_by_entity(manager, &schema, yapi_entity::project::Entity).await;
-        create_table_by_entity(manager, &schema, yapi_entity::project_env::Entity).await;
-        create_table_by_entity(manager, &schema, yapi_entity::project_member::Entity).await;
-        create_table_by_entity(manager, &schema, yapi_entity::interface::Entity).await;
-        create_table_by_entity(manager, &schema, yapi_entity::interface_cat::Entity).await;
+        create_table_by_entity(manager, &schema, yapi_entity::models::User).await;
+        create_table_by_entity(manager, &schema, yapi_entity::models::Group).await;
+        create_table_by_entity(manager, &schema, yapi_entity::models::GroupMember).await;
+        create_table_by_entity(manager, &schema, yapi_entity::models::Project).await;
+        create_table_by_entity(manager, &schema, yapi_entity::models::ProjectEnv).await;
+        create_table_by_entity(manager, &schema, yapi_entity::models::ProjectMember).await;
+        create_table_by_entity(manager, &schema, yapi_entity::models::Interface).await;
+        create_table_by_entity(manager, &schema, yapi_entity::models::InterFaceCat).await;
 
         Ok(())
     }

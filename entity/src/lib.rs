@@ -1,9 +1,1 @@
-pub mod user;
-pub mod group;
-pub mod project;
-pub mod interface_cat;
-pub mod interface;
-pub mod base;
-pub mod group_member;
-pub mod project_member;
-pub mod project_env;
+pub mod models;
