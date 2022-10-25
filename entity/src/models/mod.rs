@@ -1,41 +1,41 @@
-pub mod user;
-pub mod group;
-pub mod project;
-pub mod interface_cat;
-pub mod interface;
-pub mod base;
-pub mod group_member;
-pub mod project_member;
-pub mod project_env;
+mod base;
+mod user;
+mod group;
+mod project;
+mod interface_cat;
+mod interface;
+mod group_member;
+mod project_member;
+mod project_env;
 
-pub use user::Entity as User;
-pub use user::Column as UserConlumns;
-pub use user::ActiveModel as UserModel;
+pub mod user_entity {
+    pub use super::user::*;
+}
 
-pub use group::Entity as Group;
-pub use group::Column as GroupColumns;
-pub use group::ActiveModel as GroupModel;
+pub mod group_entity {
+    pub use super::group::*;
+}
 
-pub use project::Entity as Project;
-pub use project::Column as ProjectColumns;
-pub use project::ActiveModel as ProjectModel;
+pub mod project_entity {
+    pub use super::project::*;
+}
 
-pub use interface_cat::Entity as InterFaceCat;
-pub use interface_cat::Column as InterFaceCatColumns;
-pub use interface_cat::Model as InterfaceCatModel;
+pub mod interface_cat_entity {
+    pub use super::interface::*;
+}
 
-pub use interface::Entity as Interface;
-pub use interface::Column as InterfaceColumns;
-pub use interface::Model as InterfaceModel;
+pub mod interface_entity {
+    pub use super::interface::*;
+}
 
-pub use group_member::Entity as GroupMember;
-pub use group_member::Column as GroupMemberColumns;
-pub use group_member::Model as GroupMemberModel;
+pub mod group_member_entity {
+    pub use super::group_member::*;
+}
 
-pub use project_member::Entity as ProjectMember;
-pub use project_member::Column as ProjectMemberColumns;
-pub use project_member::Model as ProjectMemberModel;
+pub mod project_member_entity {
+    pub use super::project_member::*;
+}
 
-pub use project_env::Entity as ProjectEnv;
-pub use project_env::Column as ProjectEnvColumns;
-pub use project_env::Model as ProjectEnvModel;
+pub mod project_env_entity {
+    pub use super::project_env::*;
+}

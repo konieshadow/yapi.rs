@@ -1,6 +1,6 @@
 use sea_orm::entity::prelude::*;
 
-use super::base::MemberRole;
+use crate::models::base::MemberRole;
 
 #[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "group_member")]
