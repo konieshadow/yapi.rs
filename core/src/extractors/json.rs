@@ -9,7 +9,7 @@ use crate::error::Error;
 pub struct ValidateJson<T>(pub T);
 
 #[async_trait]
-impl<T, B> FromRequest<B> for ValidateJson<T>
+impl <T, B> FromRequest<B> for ValidateJson<T>
 where
     T: DeserializeOwned + Validate,
     B: http_body::Body + Send,
@@ -26,7 +26,7 @@ where
     }
 }
 
-impl<T> Deref for ValidateJson<T> {
+impl <T> Deref for ValidateJson<T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -34,13 +34,13 @@ impl<T> Deref for ValidateJson<T> {
     }
 }
 
-impl<T> DerefMut for ValidateJson<T> {
+impl <T> DerefMut for ValidateJson<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl<T> From<T> for ValidateJson<T> {
+impl <T> From<T> for ValidateJson<T> {
     fn from(inner: T) -> Self {
         Self(inner)
     }

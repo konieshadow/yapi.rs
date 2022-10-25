@@ -32,3 +32,11 @@ pub struct UserInfo {
     pub add_time: u32,
     pub up_time: u32,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AuthUserInfo {
+    #[serde(flatten)]
+    pub user_info: UserInfo,
+
+    pub token: String,
+}

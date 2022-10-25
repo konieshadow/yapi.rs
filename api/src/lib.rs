@@ -5,13 +5,7 @@ use std::{net::SocketAddr, sync::Arc};
 use crate::routers::routers;
 use axum::{Server, Extension};
 use sea_orm::DatabaseConnection;
-use yapi_core::config::Config;
-
-#[derive(Debug, Clone)]
-pub struct Context {
-    config: Arc<Config>,
-    db: DatabaseConnection,
-}
+use yapi_core::{config::Config, Context};
 
 pub async fn start(config: Config, db: DatabaseConnection) -> anyhow::Result<()> {
     let context = Context {

@@ -15,6 +15,9 @@ pub struct Config {
 
     #[clap(long, env, default_value_t = 5)]
     pub database_max_conns: u32,
+
+    #[clap(long, env)]
+    pub hmac_key: String,
 }
 
 pub fn get_config() -> Config {
