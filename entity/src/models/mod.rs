@@ -1,4 +1,4 @@
-mod base;
+pub mod base;
 mod user;
 mod group;
 mod project;

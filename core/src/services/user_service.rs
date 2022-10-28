@@ -6,6 +6,8 @@ use sea_orm::{
 };
 use time::OffsetDateTime;
 use yapi_common::types::{PageList, Paginator, UserInfo, UserLogin, UserReg, UserSearch};
+use yapi_entity::base::TypeVisible;
+use yapi_entity::group_entity;
 use yapi_entity::user_entity::{self, UserRole};
 
 use crate::error::Error;
@@ -52,6 +54,20 @@ pub async fn reg(db: &DatabaseConnection, user_reg: UserReg) -> Result<UserInfo>
     let user_info = user_entity::Entity::find_user_info_by_id(&tx, user_id)
         .await?
         .expect("must insert successful");
+
+    // 创建用户个人空间
+    let user_private_gorup = group_entity::ActiveModel {
+        uid: Set(user_id),
+        group_name: Set("".to_owned()),
+        group_desc: Set("".to_owned()),
+        group_type: Set(TypeVisible::Private),
+        add_time: Set(timestamp),
+        up_time: Set(timestamp),
+        ..Default::default()
+    };
+    group_entity::Entity::insert(user_private_gorup)
+        .exec(&tx)
+        .await?;
 
     tx.commit().await?;
 
