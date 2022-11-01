@@ -1,7 +1,10 @@
 mod user;
+mod group;
 
+use sea_orm::FromQueryResult;
 use serde::{Serialize, Deserialize};
 pub use user::*;
+pub use group::*;
 
 fn page_default() -> usize {
     1
@@ -50,4 +53,17 @@ impl <T> PageList<T> {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Search {
     pub q: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GetById {
+    pub id: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct MemberInfo {
+    pub id: u32,
+    pub username: String,
+    pub email: String,
+    pub role: String,
 }

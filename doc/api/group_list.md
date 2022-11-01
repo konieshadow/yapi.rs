@@ -19,7 +19,8 @@ Authorization | string | 必须     | Token xxxxxx
 参数名称         | 类型   | 出现要求 | 描述
 :----------------|:-------|:-------|:--------------
 []               | Array  | 必须     | 列表
-&emsp;_id        | int    | 必须     | 分组id
+&emsp;id         | int    | 必须     | 分组id
+&emsp;uid        | int    | 必须     | 创建者id
 &emsp;group_name | string | 必须     | 分组名称
 &emsp;role       | string | 必须     | 角色
 &emsp;type       | string | 必须     | public、private
@@ -31,3 +32,4 @@ Authorization | string | 必须     | Token xxxxxx
 响应码 | 说明
 :------|:---
 40011  | 未登录
+405    | 没有权限

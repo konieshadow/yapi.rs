@@ -1,7 +1,6 @@
 use axum::extract::Query;
 use axum::{Extension};
-use axum::routing::get;
-use axum::{Router, routing::post};
+use axum::{routing::{get, post}, Router};
 use yapi_common::types::{UserReg, AuthUserInfo, UserLogin, UserInfo, PageList, Paginator, Search, UserSearch};
 use yapi_core::extractors::auth::{AuthUser, MaybeAuthUser};
 use yapi_core::extractors::json::ValidateJson;

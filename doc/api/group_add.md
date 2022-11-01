@@ -27,13 +27,13 @@ owner_uids   | Array  | 必须     | 分组拥有者id列表
 
 参数名称       | 类型   | 出现要求 | 描述
 :--------------|:-------|:-------|:--------------
-_id            | int    | 必须     | 分组id
+id             | int    | 必须     | 分组id
 uid            | int    | 必须     | 创建者id
 group_name     | string | 必须     | 分组名称
 group_desc     | string | 必须     | 分组描述
 type           | string | 必须     | public、private
 member[]       | Array  | 必须     | 成员列表
-&emsp;_id      | int    | 必须     | 成员id
+&emsp;id       | int    | 必须     | 成员id
 &emsp;username | string | 必须     | 用户名
 &emsp;email    | string | 必须     | 邮箱
 &emsp;role     | string | 必须     | 角色
@@ -44,3 +44,4 @@ member[]       | Array  | 必须     | 成员列表
 :------|:--------
 40011  | 未登录
 401    | 项目分组名已存在
+402    | 所选成员不存在

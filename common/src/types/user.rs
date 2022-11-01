@@ -41,7 +41,7 @@ pub struct UserSearch {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct UserReg {
-    #[validate(length(min = 2, max = 18, message = "长度必须在2到18之间"))]
+    #[validate(length(min = 2, max = 30, message = "长度必须在2到30之间"))]
     pub username: String,
 
     #[validate(length(max = 50, message = "长度最大50位"), email(message = "必须是合法的邮箱地址"))]

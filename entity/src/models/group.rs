@@ -1,4 +1,4 @@
-use sea_orm::entity::prelude::*;
+use sea_orm::{entity::prelude::*};
 
 use super::base::TypeVisible;
 
@@ -10,7 +10,6 @@ pub struct Model {
 
     pub uid: u32,
 
-    #[sea_orm(unique)]
     pub group_name: String,
 
     pub group_desc: String,

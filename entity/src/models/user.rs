@@ -35,7 +35,8 @@ pub struct Model {
 }
 
 #[derive(Debug, Clone, Copy, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+}
 
 impl ActiveModelBehavior for ActiveModel {}
 
@@ -67,10 +68,10 @@ impl Model {
 
 impl Entity {
 
-    pub async fn find_user_info_by_id<C>(db: &C, id: u32) -> Result<Option<UserInfo>, DbErr>
+    pub async fn find_user_info_by_id<C>(db: &C, user_id: u32) -> Result<Option<UserInfo>, DbErr>
     where C: ConnectionTrait
     {
-        Entity::find_by_id(id)
+        Entity::find_by_id(user_id)
             .one(db)
             .await
             .map(|m| {

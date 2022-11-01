@@ -53,7 +53,7 @@ pub async fn reg(db: &DatabaseConnection, user_reg: UserReg) -> Result<UserInfo>
 
     let user_info = user_entity::Entity::find_user_info_by_id(&tx, user_id)
         .await?
-        .expect("must insert successful");
+        .ok_or_else(|| anyhow::anyhow!("insert to db failed"))?;
 
     // 创建用户个人空间
     let user_private_gorup = group_entity::ActiveModel {
@@ -99,7 +99,7 @@ pub async fn login(db: &DatabaseConnection, user_login: UserLogin) -> Result<Use
 
     let user_info = user_entity::Entity::find_user_info_by_id(db, user.id)
         .await?
-        .expect("should be exist user");
+        .ok_or_else(|| anyhow::anyhow!("should be exist user"))?;
 
     Ok(user_info)
 }
