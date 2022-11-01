@@ -32,4 +32,3 @@ Authorization | string | 必须     | Token xxxxxx
 响应码 | 说明
 :------|:---
 40011  | 未登录
-405    | 没有权限

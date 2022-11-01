@@ -1,6 +1,7 @@
-use sea_orm::{entity::prelude::*};
+use sea_orm::{entity::prelude::*, ConnectionTrait, sea_query::{Query, Expr, Alias}, JoinType, FromQueryResult};
+use yapi_common::types::GroupInfo;
 
-use super::base::TypeVisible;
+use super::{base::TypeVisible, group_member};
 
 #[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "group")]
@@ -14,7 +15,7 @@ pub struct Model {
 
     pub group_desc: String,
 
-    #[sea_orm(column_name = "type", default_value = TypeVisible::Public)]
+    #[sea_orm(column_name = "type")]
     pub group_type: TypeVisible,
 
     pub add_time: u32,
@@ -25,3 +26,34 @@ pub struct Model {
 pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl Entity {
+    pub async fn find_group_info<C>(db: &C, uid: u32, group_id: u32) -> Result<Option<GroupInfo>, DbErr>
+    where C : ConnectionTrait
+    {
+        let mut stmt = Query::select();
+        stmt.columns([
+                (Entity, Column::Id),
+                (Entity, Column::Uid),
+                (Entity, Column::GroupName),
+                (Entity, Column::AddTime),
+                (Entity, Column::UpTime),
+            ])
+            .expr_as(Expr::col((Entity, Column::GroupType)), Alias::new("group_type"))
+            .column((group_member::Entity, group_member::Column::Role))
+            .from(Entity)
+            .join(
+                JoinType::LeftJoin,
+                group_member::Entity,
+                Expr::tbl(group_member::Entity, group_member::Column::GroupId)
+                    .equals(Entity, Column::Id)
+            )
+            .and_where(Column::Id.eq(group_id))
+            .and_where(group_member::Column::Uid.eq(uid));
+
+        let builder = db.get_database_backend();
+        GroupInfo::find_by_statement(builder.build(&stmt))
+            .one(db)
+            .await
+    }
+}

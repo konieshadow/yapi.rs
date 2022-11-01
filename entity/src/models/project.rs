@@ -22,7 +22,7 @@ pub struct Model {
     pub desc: String,
 
     #[sea_orm(column_name = "type")]
-    project_type: TypeVisible,
+    pub project_type: TypeVisible,
 
     pub icon: String,
     pub color: String,

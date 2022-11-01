@@ -24,7 +24,7 @@ id       | int  | 必须     | 分组id
 
 参数名称   | 类型   | 出现要求 | 描述
 :----------|:-------|:-------|:--------------
-id        | int    | 必须     | 分组id
+id         | int    | 必须     | 分组id
 uid        | int    | 必须     | 创建者id
 group_name | string | 必须     | 分组名称
 role       | string | 必须     | 角色

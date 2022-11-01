@@ -3,7 +3,7 @@ use sea_orm::{
     TransactionTrait, ActiveEnum,
 };
 use time::OffsetDateTime;
-use yapi_common::types::{GroupAdd, GroupWithMember};
+use yapi_common::types::{GroupAdd, GroupWithMember, GroupInfo};
 use yapi_entity::{
     base::{MemberRole, TypeVisible},
     group_entity, group_member_entity, user_entity,
@@ -94,7 +94,8 @@ pub async fn add(
     })
 }
 
-pub async fn get(db: &DatabaseConnection, group_id: u32) -> Result<GroupWithMember> {
-    // 查询分组信息
-    todo!()
+pub async fn get(db: &DatabaseConnection, uid: u32, group_id: u32) -> Result<GroupInfo> {
+    group_entity::Entity::find_group_info(db, uid, group_id)
+        .await?
+        .ok_or_else(|| Error::Custom(401, "分组不存在".to_owned()))
 }

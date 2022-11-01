@@ -1,7 +1,7 @@
 use axum::extract::Query;
 use axum::routing::{post, get};
 use axum::{Router, Extension};
-use yapi_common::types::{GroupAdd, GroupWithMember, GetById};
+use yapi_common::types::{GroupAdd, GroupWithMember, GetById, GroupInfo};
 use yapi_core::extractors::auth::AuthUser;
 use yapi_core::services::group_service;
 use yapi_core::{extractors::json::ValidateJson, res::ResData, Context};
@@ -25,10 +25,10 @@ async fn add(
 
 async fn get_group(
     ctx: Extension<Context>,
-    _: AuthUser,
+    auth_user: AuthUser,
     Query(req): Query<GetById>,
-) -> Result<ResData<GroupWithMember>> {
-    let data = group_service::get(&ctx.db, req.id).await?;
+) -> Result<ResData<GroupInfo>> {
+    let data = group_service::get(&ctx.db, auth_user.user_id, req.id).await?;
 
     Ok(ResData::success(data))
 }

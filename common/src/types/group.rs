@@ -1,3 +1,4 @@
+use sea_orm::FromQueryResult;
 use serde::{Serialize, Deserialize};
 use validator::Validate;
 
@@ -27,7 +28,7 @@ pub struct GroupWithMember {
     pub member: Vec<MemberInfo>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
 pub struct GroupInfo {
     pub id: u32,
     pub uid: u32,
