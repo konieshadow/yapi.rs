@@ -9,7 +9,7 @@ POST /api/project/del_member
 #### 请求头
 
 参数名称      | 类型   | 出现要求 | 描述
-:-------------|:-------|:-------|:------------
+:-------------|:-------|:-------|:----------------
 Authorization | string | 必须     | Token xxxxxx
 Content-Type  | string | 非必须   | application/json
 
@@ -26,9 +26,7 @@ member_uid | int    | 必须     | 成员id
 
 参数名称     | 类型 | 出现要求 | 描述
 :------------|:-----|:-------|:-----
-n            | int  | 必须     | 匹配条目数
-deletedCount | int  | 必须     | 删除条目数
-ok           | int  | 必须     | 0, 1
+deleted_count | int  | 必须     | 删除条目数
 
 ### 响应码说明
 
