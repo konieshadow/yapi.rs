@@ -6,8 +6,8 @@ use sea_orm::{
 };
 use time::OffsetDateTime;
 use yapi_common::types::{PageList, Paginator, UserInfo, UserLogin, UserReg, UserSearch};
-use yapi_entity::base::TypeVisible;
-use yapi_entity::group_entity;
+use yapi_entity::base::{TypeVisible};
+use yapi_entity::{group_entity};
 use yapi_entity::user_entity::{self, UserRole};
 
 use crate::error::Error;

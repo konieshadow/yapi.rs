@@ -1,7 +1,7 @@
 mod user;
 mod group;
 
-use sea_orm::FromQueryResult;
+use sea_orm::{FromQueryResult};
 use serde::{Serialize, Deserialize};
 pub use user::*;
 pub use group::*;
@@ -66,4 +66,26 @@ pub struct MemberInfo {
     pub username: String,
     pub email: String,
     pub role: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpdateResult {
+    pub modified_count: u32,
+}
+
+impl From<sea_orm::UpdateResult> for UpdateResult {
+    fn from(r: sea_orm::UpdateResult) -> Self {
+        Self { modified_count: r.rows_affected as u32 }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DeleteResult {
+    pub deleted_count: u32,
+}
+
+impl From<sea_orm::DeleteResult> for DeleteResult {
+    fn from(r: sea_orm::DeleteResult) -> Self {
+        Self { deleted_count: r.rows_affected as u32 }
+    }
 }

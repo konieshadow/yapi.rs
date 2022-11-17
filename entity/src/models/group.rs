@@ -1,4 +1,4 @@
-use sea_orm::{entity::prelude::*, ConnectionTrait, sea_query::{Query, Expr, Alias}, JoinType, FromQueryResult};
+use sea_orm::{entity::prelude::*, ConnectionTrait, sea_query::{Query, Expr, Alias, Cond}, JoinType, FromQueryResult, Order, Condition};
 use yapi_common::types::GroupInfo;
 
 use super::{base::TypeVisible, group_member};
@@ -49,11 +49,69 @@ impl Entity {
                     .equals(Entity, Column::Id)
             )
             .and_where(Column::Id.eq(group_id))
-            .and_where(group_member::Column::Uid.eq(uid));
+            .cond_where(
+                Cond::any()
+                    .add(group_member::Column::Uid.eq(uid))
+                    .add(
+                        Cond::all()
+                            .add(Column::Uid.eq(uid))
+                            .add(Column::GroupType.eq(TypeVisible::Private))
+                    )
+            );
 
         let builder = db.get_database_backend();
         GroupInfo::find_by_statement(builder.build(&stmt))
             .one(db)
             .await
+    }
+
+    pub async fn find_group_list<C>(db: &C, uid: u32) -> Result<Vec<GroupInfo>, DbErr>
+    where C : ConnectionTrait
+    {
+        let mut stmt = Query::select();
+        stmt.columns([
+                (Entity, Column::Id),
+                (Entity, Column::Uid),
+                (Entity, Column::GroupName),
+                (Entity, Column::AddTime),
+                (Entity, Column::UpTime),
+            ])
+            .expr_as(Expr::col((Entity, Column::GroupType)), Alias::new("group_type"))
+            .column((group_member::Entity, group_member::Column::Role))
+            .from(Entity)
+            .join(
+                JoinType::LeftJoin,
+                group_member::Entity,
+                Expr::tbl(group_member::Entity, group_member::Column::GroupId)
+                    .equals(Entity, Column::Id)
+            )
+            .and_where(group_member::Column::Uid.eq(uid))
+            .order_by((Entity, Column::Id), Order::Desc);
+
+        let builder = db.get_database_backend();
+        GroupInfo::find_by_statement(builder.build(&stmt))
+            .all(db)
+            .await
+    }
+
+    pub async fn find_private_group<C>(db: &C, uid: u32) -> Result<Option<GroupInfo>, DbErr>
+    where C : ConnectionTrait {
+        Entity::find()
+            .filter(
+                Condition::all()
+                    .add(Column::Uid.eq(uid))
+                    .add(Column::GroupType.eq(TypeVisible::Private))
+            )
+            .one(db)
+            .await
+            .map(|o| o.map(|r| GroupInfo {
+                id: r.id,
+                uid: r.uid,
+                group_name: r.group_name,
+                role: None,
+                group_type: r.group_type.into_value(),
+                add_time: r.add_time,
+                up_time: r.up_time,
+            }))
     }
 }

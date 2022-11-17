@@ -1,9 +1,9 @@
 use sea_orm::{
-    ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter, Set,
-    TransactionTrait, ActiveEnum,
+    ActiveEnum, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter, Set,
+    TransactionTrait,
 };
 use time::OffsetDateTime;
-use yapi_common::types::{GroupAdd, GroupWithMember, GroupInfo};
+use yapi_common::types::{GroupAdd, GroupInfo, GroupUp, GroupWithMember, UpdateResult};
 use yapi_entity::{
     base::{MemberRole, TypeVisible},
     group_entity, group_member_entity, user_entity,
@@ -94,8 +94,52 @@ pub async fn add(
     })
 }
 
+pub async fn up(db: &DatabaseConnection, group_up: GroupUp, uid: u32) -> Result<UpdateResult> {
+    let tx = db.begin().await?;
+
+    // 只有拥有者可以修改
+    let is_owner = group_member_entity::Entity::find()
+        .filter(
+            group_member_entity::Column::GroupId.eq(group_up.id)
+            .and(group_member_entity::Column::Uid.eq(uid))
+            .and(group_member_entity::Column::Role.eq(MemberRole::Owner))
+        )
+        .count(&tx)
+        .await?;
+
+    if is_owner == 0 {
+        return Err(Error::Custom(405, "没有权限".to_owned()));
+    }
+
+    let result = group_entity::Entity::update_many()
+        .set(group_entity::ActiveModel {
+            ..Default::default()
+        })
+        .filter(group_entity::Column::Id.eq(group_up.id))
+        .exec(&tx)
+        .await?;
+
+    tx.commit().await?;
+
+    Ok(result.into())
+}
+
 pub async fn get(db: &DatabaseConnection, uid: u32, group_id: u32) -> Result<GroupInfo> {
     group_entity::Entity::find_group_info(db, uid, group_id)
         .await?
         .ok_or_else(|| Error::Custom(401, "分组不存在".to_owned()))
+}
+
+pub async fn list(db: &DatabaseConnection, uid: u32) -> Result<Vec<GroupInfo>> {
+    // 查找个人空间
+    let private_group = group_entity::Entity::find_private_group(db, uid).await?;
+
+    // 查找加入的空间
+    let mut group_list = group_entity::Entity::find_group_list(db, uid).await?;
+
+    if let Some(group) = private_group {
+        group_list.insert(0, group)
+    }
+
+    Ok(group_list)
 }
