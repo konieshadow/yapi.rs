@@ -3,7 +3,7 @@ use sea_orm::{
     TransactionTrait,
 };
 use time::OffsetDateTime;
-use yapi_common::types::{GroupAdd, GroupInfo, GroupUp, GroupWithMember, UpdateResult};
+use yapi_common::types::{GroupAdd, GroupInfo, GroupUp, GroupWithMember, UpdateResult, DeleteResult};
 use yapi_entity::{
     base::{MemberRole, TypeVisible},
     group_entity, group_member_entity, user_entity,
@@ -118,6 +118,53 @@ pub async fn up(db: &DatabaseConnection, group_up: GroupUp, uid: u32) -> Result<
         .filter(group_entity::Column::Id.eq(group_up.id))
         .exec(&tx)
         .await?;
+
+    tx.commit().await?;
+
+    Ok(result.into())
+}
+
+pub async fn del(db: &DatabaseConnection, uid: u32, group_id: u32) -> Result<DeleteResult> {
+    let tx = db.begin().await?;
+
+    // 只有拥有者可以删除
+    let is_owner = group_member_entity::Entity::find()
+        .filter(
+            group_member_entity::Column::GroupId.eq(group_id)
+            .and(group_member_entity::Column::Uid.eq(uid))
+            .and(group_member_entity::Column::Role.eq(MemberRole::Owner))
+        )
+        .count(&tx)
+        .await?;
+
+    if is_owner == 0 {
+        return Err(Error::Custom(405, "没有权限".to_owned()));
+    }
+
+    // 删除分组
+    let result = group_entity::Entity::delete_by_id(group_id)
+        .exec(&tx)
+        .await?;
+
+    // 删除分组成员
+    group_member_entity::Entity::delete_many()
+        .filter(group_member_entity::Column::GroupId.eq(group_id))
+        .exec(&tx)
+        .await?;
+
+    // 删除项目
+    // TODO
+
+    // 删除项目成员
+    // TODO
+
+    // 删除项目环境
+
+    // 删除项目下的接口分类
+    // TODO
+
+    // 删除项目下的所有接口
+    // TODO
 
     tx.commit().await?;
 
