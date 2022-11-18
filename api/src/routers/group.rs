@@ -1,7 +1,7 @@
 use axum::extract::Query;
 use axum::routing::{post, get};
 use axum::{Router, Extension};
-use yapi_common::types::{GroupAdd, GroupWithMember, GetById, GroupInfo, GroupUp, UpdateResult, DeleteResult};
+use yapi_common::types::{GroupAdd, GroupWithMember, GetById, GroupInfo, GroupUp, UpdateResult, DeleteResult, MemberInfo, AddMemberResult, AddMember};
 use yapi_core::extractors::auth::AuthUser;
 use yapi_core::services::group_service;
 use yapi_core::{extractors::json::ValidateJson, res::ResData, Context};
@@ -14,6 +14,8 @@ pub fn router() -> Router {
         .route("/group/del", post(del))
         .route("/group/get", get(get_group))
         .route("/group/list", get(list_group))
+        .route("/group/get_member_list", get(get_memeber_list))
+        .route("/group/add_member", post(add_member))
 }
 
 async fn add(
@@ -61,6 +63,26 @@ async fn list_group(
     auth_user: AuthUser,
 ) -> Result<ResData<Vec<GroupInfo>>> {
     let data = group_service::list(&ctx.db, auth_user.user_id).await?;
+
+    Ok(ResData::success(data))
+}
+
+async fn get_memeber_list(
+    ctx: Extension<Context>,
+    auth_user: AuthUser,
+    Query(req): Query<GetById>,
+) -> Result<ResData<Vec<MemberInfo>>> {
+    let data = group_service::get_memeber_list(&ctx.db, auth_user.user_id, req.id).await?;
+
+    Ok(ResData::success(data))
+}
+
+async fn add_member(
+    ctx: Extension<Context>,
+    auth_user: AuthUser,
+    ValidateJson(req): ValidateJson<AddMember>,
+) -> Result<ResData<AddMemberResult>> {
+    let data = group_service::add_member(&ctx.db, auth_user.user_id, req).await?;
 
     Ok(ResData::success(data))
 }

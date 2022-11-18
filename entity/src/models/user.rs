@@ -1,14 +1,14 @@
-use sea_orm::{entity::prelude::*, ConnectionTrait};
+use sea_orm::{entity::prelude::*, ConnectionTrait, QuerySelect, FromQueryResult};
 use serde::{Deserialize, Serialize};
 use yapi_common::types::{UserInfo, UserSearch};
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumIter, Serialize, Deserialize, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
 pub enum UserRole {
-    #[sea_orm(string_value = "Admin")]
+    #[sea_orm(string_value = "admin")]
     Admin,
 
-    #[sea_orm(string_value = "Member")]
+    #[sea_orm(string_value = "member")]
     Member,
 }
 
@@ -44,10 +44,10 @@ impl Model {
     pub fn to_user_info(&self) -> UserInfo {
         UserInfo {
             id: self.id,
-            username: self.username.to_owned(),
-            email: self.email.to_owned(),
-            role: self.role.to_owned().into_value(),
-            user_type: "site".to_owned(),
+            username: self.username.clone(),
+            email: self.email.clone(),
+            role: self.role.clone().into_value(),
+            user_type: String::from("site"),
             study: self.study,
             add_time: self.add_time,
             up_time: self.up_time,
@@ -57,9 +57,9 @@ impl Model {
     pub fn to_user_search(&self) -> UserSearch {
         UserSearch {
             id: self.id,
-            username: self.username.to_owned(),
-            email: self.email.to_owned(),
-            role: self.role.to_owned().into_value(),
+            username: self.username.clone(),
+            email: self.email.clone(),
+            role: self.role.clone().into_value(),
             add_time: self.add_time,
             up_time: self.up_time,
         }
@@ -77,5 +77,31 @@ impl Entity {
             .map(|m| {
                 m.map(|m| m.to_user_info())
             })
+    }
+
+    pub async fn find_exist_uids<C>(db: &C, uids: &[u32]) -> Result<Vec<u32>, DbErr>
+    where C: ConnectionTrait
+    {
+        if uids.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        #[derive(FromQueryResult)]
+        struct Id {
+            id: u32,
+        }
+
+        let result = Entity::find()
+            .select_only()
+            .column(Column::Id)
+            .filter(Column::Id.is_in(uids.to_owned()))
+            .into_model::<Id>()
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|m| m.id)
+            .collect();
+
+        Ok(result)
     }
 }

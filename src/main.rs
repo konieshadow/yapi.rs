@@ -9,7 +9,7 @@ async fn main() -> anyhow::Result<()> {
     let config = config::get_config();
 
     // connection pool
-    let mut conn_opt = ConnectOptions::new(config.database_url.to_owned());
+    let mut conn_opt = ConnectOptions::new(config.database_url.clone());
     conn_opt.min_connections(config.database_min_conns);
     conn_opt.max_connections(config.database_max_conns);
     let db = Database::connect(conn_opt).await.expect("connect to database failed");

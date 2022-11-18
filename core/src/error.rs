@@ -1,5 +1,6 @@
 use std::{borrow::Cow, collections::HashMap};
 
+use anyhow::anyhow;
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -80,20 +81,20 @@ impl Error {
 
     fn errmsg(&self) -> String {
         match self {
-            Self::Custom(_, msg) => msg.to_owned(),
-            Self::BadRequest => MSG_BAD_REQUEST.to_owned(),
-            Self::Unauthorized => MSG_UNAUTHORIZED.to_owned(),
-            Self::Forbidden => MSG_FORBIDDEN.to_owned(),
+            Self::Custom(_, msg) => msg.clone(),
+            Self::BadRequest => String::from(MSG_BAD_REQUEST),
+            Self::Unauthorized => String::from(MSG_UNAUTHORIZED),
+            Self::Forbidden => String::from(MSG_FORBIDDEN),
             Self::NotFound(msg) => {
                 if msg.is_empty() {
-                    MSG_NOT_FOUND.to_owned()
+                    String::from(MSG_NOT_FOUND)
                 } else {
-                    msg.to_owned()
+                    msg.clone()
                 }
             }
             Self::UnprocessableEntity { errors } => {
                 if errors.is_empty() {
-                    MSG_UNPROCESSABLE_ENTITY.to_owned()
+                    String::from(MSG_UNPROCESSABLE_ENTITY)
                 } else {
                     format!(
                         "{} {}",
@@ -109,7 +110,7 @@ impl Error {
                     serde_json::to_string(err).expect("panic when serialize to json")
                 )
             }
-            _ => MSG_ANYHOW.to_owned(),
+            _ => String::from(MSG_ANYHOW),
         }
     }
 }
@@ -118,10 +119,10 @@ impl IntoResponse for Error {
     fn into_response(self) -> Response {
         match self {
             Self::DbError(ref e) => {
-                log::error!("db error: {:?}", e);
+                log::error!("{:?}", anyhow!("db error: {}", e));
             },
             Self::Anyhow(ref e) => {
-                log::error!("generic error: {:?}", e);
+                log::error!("{:?}", e);
             }
             _ => {}
         }

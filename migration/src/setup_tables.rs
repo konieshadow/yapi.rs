@@ -55,6 +55,6 @@ async fn drop_table_by_entity<E>(manager: &SchemaManager<'_>, entity: E)
 where E: EntityTrait
 {
     manager
-        .drop_table(Table::drop().table(entity.into_table_ref()).to_owned())
+        .drop_table(Table::drop().table(entity.into_table_ref()).clone())
         .await.unwrap();
 }

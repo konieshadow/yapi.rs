@@ -20,14 +20,14 @@ pub async fn reg(db: &DatabaseConnection, user_reg: UserReg) -> Result<UserInfo>
     let exist_count = user_entity::Entity::find()
         .filter(
             Condition::any()
-                .add(user_entity::Column::Username.eq(user_reg.username.to_owned()))
-                .add(user_entity::Column::Email.eq(user_reg.email.to_owned())),
+                .add(user_entity::Column::Username.eq(user_reg.username.clone()))
+                .add(user_entity::Column::Email.eq(user_reg.email.clone())),
         )
         .count(&tx)
         .await?;
 
     if exist_count > 0 {
-        return Err(Error::Custom(401, "该用户名或邮箱已存在".to_owned()));
+        return Err(Error::Custom(401, String::from("该用户名或邮箱已存在")));
     }
 
     // 加密密码
@@ -37,8 +37,8 @@ pub async fn reg(db: &DatabaseConnection, user_reg: UserReg) -> Result<UserInfo>
 
     // 插入记录
     let user = user_entity::ActiveModel {
-        username: Set(user_reg.username.to_owned()),
-        email: Set(user_reg.email.to_owned()),
+        username: Set(user_reg.username.clone()),
+        email: Set(user_reg.email.clone()),
         password: Set(password),
         role: Set(UserRole::Member),
         add_time: Set(timestamp),
@@ -58,8 +58,8 @@ pub async fn reg(db: &DatabaseConnection, user_reg: UserReg) -> Result<UserInfo>
     // 创建用户个人空间
     let user_private_gorup = group_entity::ActiveModel {
         uid: Set(user_id),
-        group_name: Set("".to_owned()),
-        group_desc: Set("".to_owned()),
+        group_name: Set(String::new()),
+        group_desc: Set(String::new()),
         group_type: Set(TypeVisible::Private),
         add_time: Set(timestamp),
         up_time: Set(timestamp),
@@ -89,12 +89,12 @@ pub async fn login(db: &DatabaseConnection, user_login: UserLogin) -> Result<Use
         .into_model::<QueryAs>()
         .one(db)
         .await?
-        .ok_or_else(|| Error::NotFound("用户不存在".to_owned()))?;
+        .ok_or_else(|| Error::NotFound(String::from("用户不存在")))?;
 
     let password_matched = verify_password(user_login.password, user.password).await?;
 
     if !password_matched {
-        return Err(Error::Custom(405, "密码不正确".to_owned()));
+        return Err(Error::Custom(405, String::from("密码不正确")));
     }
 
     let user_info = user_entity::Entity::find_user_info_by_id(db, user.id)

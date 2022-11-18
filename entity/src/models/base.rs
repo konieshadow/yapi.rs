@@ -14,14 +14,28 @@ pub enum TypeVisible {
 #[derive(Debug, Clone, PartialEq, Eq, EnumIter, Serialize, Deserialize, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
 pub enum MemberRole {
-    #[sea_orm(string_value = "Owner")]
+    #[sea_orm(string_value = "owner")]
     Owner,
 
-    #[sea_orm(string_value = "Dev")]
+    #[sea_orm(string_value = "dev")]
     Dev,
 
-    #[sea_orm(string_value = "Visitor")]
+    #[sea_orm(string_value = "visitor")]
     Visitor,
+}
+
+impl MemberRole {
+    pub fn try_from_str(string_value: &str) -> Option<Self> {
+        if string_value == Self::Owner.into_value().as_str() {
+            Some(Self::Owner)
+        } else if string_value == Self::Dev.into_value().as_str() {
+            Some(Self::Dev)
+        } else if string_value == Self::Dev.into_value().as_str() {
+            Some(Self::Visitor)
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]

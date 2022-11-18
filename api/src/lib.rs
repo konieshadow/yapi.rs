@@ -9,7 +9,7 @@ use yapi_core::{config::Config, Context};
 
 pub async fn start(config: Config, db: DatabaseConnection) -> anyhow::Result<()> {
     let context = Context {
-        config: Arc::new(config.to_owned()),
+        config: Arc::new(config.clone()),
         db,
     };
 

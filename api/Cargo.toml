@@ -12,7 +12,7 @@ futures = "0.3"
 tokio = { version = "1.14.0", features = ["macros", "rt-multi-thread", "signal"] }
 axum = { version = "0.5.17", features = ["tower-log"] }
 log = "0.4"
-anyhow = "1.0"
-sea-orm = { version = "^0", features = [ "sqlx-sqlite", "sqlx-mysql", "runtime-tokio-native-tls", "macros" ] }
+anyhow = { version = "1.0", features = ["backtrace"] }
+sea-orm = { version = "^0", features = ["sqlx-sqlite", "sqlx-mysql", "runtime-tokio-native-tls", "macros"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1.0"

@@ -13,8 +13,8 @@ yapi-migration = { path = "migration" }
 yapi-api = { path = "api" }
 yapi-core = { path = "core" }
 tokio = { version = "1.14.0", features = ["macros", "rt-multi-thread", "signal"] }
-sea-orm = { version = "^0", features = [ "sqlx-sqlite", "sqlx-mysql", "runtime-tokio-native-tls", "macros" ] }
+sea-orm = { version = "^0", features = ["sqlx-sqlite", "sqlx-mysql", "runtime-tokio-native-tls", "macros"] }
 dotenvy = "0.15.6"
 env_logger = "0.9.1"
 log = "0.4"
-anyhow = "1.0"
+anyhow = { version = "1.0", features = ["backtrace"] }
