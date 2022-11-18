@@ -19,6 +19,19 @@ impl MigrationTrait for Migration {
 
         Ok(())
     }
+
+    async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        drop_table_by_entity(manager, yapi_entity::user_entity::Entity).await;
+        drop_table_by_entity(manager, yapi_entity::group_entity::Entity).await;
+        drop_table_by_entity(manager, yapi_entity::project_entity::Entity).await;
+        drop_table_by_entity(manager, yapi_entity::interface_cat_entity::Entity).await;
+        drop_table_by_entity(manager, yapi_entity::interface_entity::Entity).await;
+        drop_table_by_entity(manager, yapi_entity::group_member_entity::Entity).await;
+        drop_table_by_entity(manager, yapi_entity::project_member_entity::Entity).await;
+        drop_table_by_entity(manager, yapi_entity::project_env_entity::Entity).await;
+
+        Ok(())
+    } 
 }
 
 async fn create_table_by_entity<E>(manager: &SchemaManager<'_>, schema: &Schema, entity: E)
@@ -36,4 +49,12 @@ where E: EntityTrait
             .await.unwrap();
     }
     
+}
+
+async fn drop_table_by_entity<E>(manager: &SchemaManager<'_>, entity: E)
+where E: EntityTrait
+{
+    manager
+        .drop_table(Table::drop().table(entity.into_table_ref()).to_owned())
+        .await.unwrap();
 }

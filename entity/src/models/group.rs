@@ -29,7 +29,7 @@ impl ActiveModelBehavior for ActiveModel {}
 
 impl Entity {
     pub async fn find_group_info<C>(db: &C, uid: u32, group_id: u32) -> Result<Option<GroupInfo>, DbErr>
-    where C : ConnectionTrait
+    where C: ConnectionTrait
     {
         let mut stmt = Query::select();
         stmt.columns([
@@ -66,7 +66,7 @@ impl Entity {
     }
 
     pub async fn find_group_list<C>(db: &C, uid: u32) -> Result<Vec<GroupInfo>, DbErr>
-    where C : ConnectionTrait
+    where C: ConnectionTrait
     {
         let mut stmt = Query::select();
         stmt.columns([
@@ -95,7 +95,7 @@ impl Entity {
     }
 
     pub async fn find_private_group<C>(db: &C, uid: u32) -> Result<Option<GroupInfo>, DbErr>
-    where C : ConnectionTrait {
+    where C: ConnectionTrait {
         Entity::find()
             .filter(
                 Condition::all()
