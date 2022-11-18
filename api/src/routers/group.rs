@@ -1,7 +1,7 @@
 use axum::extract::Query;
 use axum::routing::{post, get};
 use axum::{Router, Extension};
-use yapi_common::types::{GroupAdd, GroupWithMember, GetById, GroupInfo, GroupUp, UpdateResult, DeleteResult, MemberInfo, AddMemberResult, AddMember};
+use yapi_common::types::{GroupAdd, GroupWithMember, GetById, GroupInfo, GroupUp, UpdateResult, DeleteResult, MemberInfo, AddMemberResult, AddMember, DeleteMember, ChangeMemberRole};
 use yapi_core::extractors::auth::AuthUser;
 use yapi_core::services::group_service;
 use yapi_core::{extractors::json::ValidateJson, res::ResData, Context};
@@ -16,6 +16,8 @@ pub fn router() -> Router {
         .route("/group/list", get(list_group))
         .route("/group/get_member_list", get(get_memeber_list))
         .route("/group/add_member", post(add_member))
+        .route("/group/del_member", post(delete_member))
+        .route("/group/change_member_role", post(change_member_role))
 }
 
 async fn add(
@@ -83,6 +85,26 @@ async fn add_member(
     ValidateJson(req): ValidateJson<AddMember>,
 ) -> Result<ResData<AddMemberResult>> {
     let data = group_service::add_member(&ctx.db, auth_user.user_id, req).await?;
+
+    Ok(ResData::success(data))
+}
+
+async fn delete_member(
+    ctx: Extension<Context>,
+    auth_user: AuthUser,
+    ValidateJson(req): ValidateJson<DeleteMember>,
+) -> Result<ResData<DeleteResult>> {
+    let data = group_service::del_member(&ctx.db, auth_user.user_id, req).await?;
+
+    Ok(ResData::success(data))
+}
+
+async fn change_member_role(
+    ctx: Extension<Context>,
+    auth_user: AuthUser,
+    ValidateJson(req): ValidateJson<ChangeMemberRole>,
+) -> Result<ResData<UpdateResult>> {
+    let data = group_service::change_member_role(&ctx.db, auth_user.user_id, req).await?;
 
     Ok(ResData::success(data))
 }

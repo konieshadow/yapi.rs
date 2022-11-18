@@ -1,9 +1,9 @@
 use sea_orm::{
     ActiveEnum, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter, Set,
-    TransactionTrait, ConnectionTrait,
+    TransactionTrait, ConnectionTrait, sea_query::Expr,
 };
 use time::OffsetDateTime;
-use yapi_common::types::{GroupAdd, GroupInfo, GroupUp, GroupWithMember, UpdateResult, DeleteResult, MemberInfo, AddMember, AddMemberResult};
+use yapi_common::types::{GroupAdd, GroupInfo, GroupUp, GroupWithMember, UpdateResult, DeleteResult, MemberInfo, AddMember, AddMemberResult, DeleteMember, ChangeMemberRole};
 use yapi_entity::{
     base::{MemberRole, TypeVisible},
     group_entity, group_member_entity, user_entity,
@@ -175,24 +175,25 @@ pub async fn get_memeber_list(db: &DatabaseConnection, uid: u32, group_id: u32) 
     group_member_entity::Entity::find_member_by_group(db, group_id).await.map_err(Into::into)
 }
 
-pub async fn add_member(db: &DatabaseConnection, uid: u32, group_add_member: AddMember) -> Result<AddMemberResult> {
-    let member_role = MemberRole::try_from_str(&group_add_member.role)
+pub async fn add_member(db: &DatabaseConnection, uid: u32, add_member: AddMember) -> Result<AddMemberResult> {
+    let member_role = MemberRole::try_from_str(&add_member.role)
         .ok_or(Error::BadRequest)?;
 
     let tx = db.begin().await?;
     
-    check_is_owner_of_group(&tx, uid, group_add_member.id).await?;
+    // 只有拥有者可以添加成员
+    check_is_owner_of_group(&tx, uid, add_member.id).await?;
 
     // 查询存在的用户id
-    let exist_uids = user_entity::Entity::find_exist_uids(&tx, &group_add_member.member_uids).await?;
+    let exist_uids = user_entity::Entity::find_exist_uids(&tx, &add_member.member_uids).await?;
     log::debug!("exist_uids: {:?}", exist_uids);
 
     // 过滤不存在的用户id
-    let no_members: Vec<u32> = group_add_member.member_uids.clone().into_iter().filter(|uid| !exist_uids.contains(uid)).collect();
+    let no_members: Vec<u32> = add_member.member_uids.clone().into_iter().filter(|uid| !exist_uids.contains(uid)).collect();
     log::debug!("no_members: {:?}", no_members);
 
     // 查询组内已存在的成员
-    let exist_members = group_member_entity::Entity::find_member_by_group_and_uids(&tx, group_add_member.id, &exist_uids).await?;
+    let exist_members = group_member_entity::Entity::find_member_by_group_and_uids(&tx, add_member.id, &exist_uids).await?;
     let exist_member_uids: Vec<u32> = exist_members.clone().into_iter().map(|m| m.id).collect();
     log::debug!("exist_member_uids: {:?}", exist_member_uids);
 
@@ -201,7 +202,7 @@ pub async fn add_member(db: &DatabaseConnection, uid: u32, group_add_member: Add
     log::debug!("add_member_uids: {:?}", add_member_uids);
     if !add_member_uids.is_empty() {
         let models = add_member_uids.clone().into_iter().map(|uid| group_member_entity::ActiveModel {
-            group_id: Set(group_add_member.id),
+            group_id: Set(add_member.id),
             uid: Set(uid),
             role: Set(member_role.clone())
         });
@@ -211,7 +212,7 @@ pub async fn add_member(db: &DatabaseConnection, uid: u32, group_add_member: Add
     }
 
     // 查询新添加的成员
-    let add_members = group_member_entity::Entity::find_member_by_group_and_uids(&tx, group_add_member.id, &add_member_uids).await?;
+    let add_members = group_member_entity::Entity::find_member_by_group_and_uids(&tx, add_member.id, &add_member_uids).await?;
 
     tx.commit().await?;
 
@@ -222,6 +223,48 @@ pub async fn add_member(db: &DatabaseConnection, uid: u32, group_add_member: Add
     })
 }
 
+pub async fn del_member(db: &DatabaseConnection, uid: u32, delete_member: DeleteMember) -> Result<DeleteResult> {
+    let tx = db.begin().await?;
+
+    // 只有拥有者可以删除成员
+    check_is_owner_of_group(&tx, uid, delete_member.id).await?;
+
+    let result = group_member_entity::Entity::delete_many()
+        .filter(
+            group_member_entity::Column::GroupId.eq(delete_member.id)
+                .and(group_member_entity::Column::Uid.eq(delete_member.member_uid))
+        )
+        .exec(&tx)
+        .await?;
+
+    tx.commit().await?;
+
+    Ok(result.into())
+}
+
+pub async fn change_member_role(db: &DatabaseConnection, uid: u32, change_member_role: ChangeMemberRole) -> Result<UpdateResult> {
+    let member_role = MemberRole::try_from_str(&change_member_role.role)
+        .ok_or(Error::BadRequest)?;
+
+    let tx = db.begin().await?;
+
+    // 只有拥有者可以修改成员角色
+    check_is_owner_of_group(&tx, uid, change_member_role.id).await?;
+
+    let result = group_member_entity::Entity::update_many()
+        .filter(
+            group_member_entity::Column::GroupId.eq(change_member_role.id)
+                .and(group_member_entity::Column::Uid.eq(change_member_role.id))
+        )
+        .col_expr(group_member_entity::Column::Role, Expr::value(member_role))
+        .exec(&tx)
+        .await?;
+
+    tx.commit().await?;
+
+    Ok(result.into())
+}
+
 async fn check_is_owner_of_group<C>(c: &C, uid: u32, group_id: u32) -> Result<()>
 where C: ConnectionTrait
 {
@@ -229,8 +272,8 @@ where C: ConnectionTrait
     let is_owner = group_member_entity::Entity::find()
         .filter(
             group_member_entity::Column::GroupId.eq(group_id)
-            .and(group_member_entity::Column::Uid.eq(uid))
-            .and(group_member_entity::Column::Role.eq(MemberRole::Owner))
+                .and(group_member_entity::Column::Uid.eq(uid))
+                .and(group_member_entity::Column::Role.eq(MemberRole::Owner))
         )
         .count(c)
         .await?;

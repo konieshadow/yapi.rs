@@ -115,3 +115,20 @@ pub struct AddMember {
     #[validate(custom = "valid_role_fn")]
     pub role: String,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct DeleteMember {
+    pub id: u32,
+
+    pub member_uid: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+pub struct ChangeMemberRole {
+    pub id: u32,
+
+    pub member_uid: u32,
+
+    #[validate(custom = "valid_role_fn")]
+    pub role: String,
+}

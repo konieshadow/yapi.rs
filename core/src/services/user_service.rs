@@ -17,7 +17,7 @@ pub async fn reg(db: &DatabaseConnection, user_reg: UserReg) -> Result<UserInfo>
     let tx = db.begin().await?;
 
     // 先查询用户名是否已存在
-    let exist_count = user_entity::Entity::find()
+    let exists_count = user_entity::Entity::find()
         .filter(
             Condition::any()
                 .add(user_entity::Column::Username.eq(user_reg.username.clone()))
@@ -26,7 +26,7 @@ pub async fn reg(db: &DatabaseConnection, user_reg: UserReg) -> Result<UserInfo>
         .count(&tx)
         .await?;
 
-    if exist_count > 0 {
+    if exists_count > 0 {
         return Err(Error::Custom(401, String::from("该用户名或邮箱已存在")));
     }
 
