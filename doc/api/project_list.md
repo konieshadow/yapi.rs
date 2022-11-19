@@ -27,7 +27,7 @@ limit    | int  | 非必须   | 每页数量
 参数名称                | 类型   | 出现要求 | 描述
 :-----------------------|:-------|:-------|:--------------
 list[]                  | Array  | 必须     | 列表
-&emsp;_id               | int    | 必须     | 项目id
+&emsp;id               | int    | 必须     | 项目id
 &emsp;uid               | int    | 必须     | 创建者id
 &emsp;name              | string | 必须     | 项目名称
 &emsp;basepath          | string | 必须     | 接口基本路径

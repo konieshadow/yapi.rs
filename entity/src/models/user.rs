@@ -67,11 +67,32 @@ impl Model {
 }
 
 impl Entity {
-
-    pub async fn find_user_info_by_id<C>(db: &C, user_id: u32) -> Result<Option<UserInfo>, DbErr>
+    pub async fn find_user_role_by_id<C>(db: &C, uid: u32) -> Result<Option<UserRole>, DbErr>
     where C: ConnectionTrait
     {
-        Entity::find_by_id(user_id)
+        #[derive(FromQueryResult)]
+        struct UserInfo {
+            pub role: UserRole,
+        }
+
+        Entity::find()
+            .select_only()
+            .column(Column::Role)
+            .filter(
+                Column::Id.eq(uid)
+            )
+            .into_model::<UserInfo>()
+            .one(db)
+            .await
+            .map(|m| {
+                m.map(|m| m.role)
+            })
+    }
+
+    pub async fn find_user_info_by_id<C>(db: &C, uid: u32) -> Result<Option<UserInfo>, DbErr>
+    where C: ConnectionTrait
+    {
+        Entity::find_by_id(uid)
             .one(db)
             .await
             .map(|m| {

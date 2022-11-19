@@ -15,23 +15,23 @@ pub enum TypeVisible {
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
 pub enum MemberRole {
     #[sea_orm(string_value = "owner")]
-    Owner,
+    Owner = 0,
 
     #[sea_orm(string_value = "dev")]
-    Dev,
+    Dev = 10,
 
-    #[sea_orm(string_value = "visitor")]
-    Visitor,
+    #[sea_orm(string_value = "guest")]
+    Guest = 20,
 }
 
 impl MemberRole {
     pub fn try_from_str(string_value: &str) -> Option<Self> {
-        if string_value == Self::Owner.into_value().as_str() {
+        if string_value == "owner" {
             Some(Self::Owner)
-        } else if string_value == Self::Dev.into_value().as_str() {
+        } else if string_value ==  "dev" {
             Some(Self::Dev)
-        } else if string_value == Self::Dev.into_value().as_str() {
-            Some(Self::Visitor)
+        } else if string_value == "guest" {
+            Some(Self::Guest)
         } else {
             None
         }

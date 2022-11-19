@@ -1,6 +1,6 @@
 use sea_orm::{
     ActiveEnum, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter, Set,
-    TransactionTrait, ConnectionTrait, sea_query::Expr, ActiveValue::NotSet, ActiveModelTrait,
+    TransactionTrait, sea_query::Expr, ActiveValue::NotSet, ActiveModelTrait,
 };
 use time::OffsetDateTime;
 use yapi_common::types::{GroupAdd, GroupInfo, GroupUp, GroupWithMember, UpdateResult, DeleteResult, MemberInfo, AddMember, AddMemberResult, DeleteMember, ChangeMemberRole};
@@ -10,6 +10,8 @@ use yapi_entity::{
 };
 
 use crate::{error::Error, Result};
+
+use super::base::{get_user_group_role, ActionType};
 
 pub async fn add(
     db: &DatabaseConnection,
@@ -97,8 +99,9 @@ pub async fn add(
 pub async fn up(db: &DatabaseConnection, group_up: GroupUp, uid: u32) -> Result<UpdateResult> {
     let tx = db.begin().await?;
 
-    // 只有拥有者可以修改
-    check_is_owner_of_group(&tx, uid, group_up.id).await?;
+    // 校验权限
+    get_user_group_role(&tx, uid, group_up.id).await?
+        .check_permission(ActionType::Edit)?;
 
     let update_model = group_entity::ActiveModel {
         group_name: group_up.group_name.map(Set).unwrap_or(NotSet),
@@ -124,8 +127,9 @@ pub async fn up(db: &DatabaseConnection, group_up: GroupUp, uid: u32) -> Result<
 pub async fn del(db: &DatabaseConnection, uid: u32, group_id: u32) -> Result<DeleteResult> {
     let tx = db.begin().await?;
 
-    // 只有拥有者可以删除
-    check_is_owner_of_group(&tx, uid, group_id).await?;
+    // 校验权限
+    get_user_group_role(&tx, uid, group_id).await?
+        .check_permission(ActionType::Danger)?;
 
     // 删除分组
     let result = group_entity::Entity::delete_by_id(group_id)
@@ -158,6 +162,10 @@ pub async fn del(db: &DatabaseConnection, uid: u32, group_id: u32) -> Result<Del
 }
 
 pub async fn get(db: &DatabaseConnection, uid: u32, group_id: u32) -> Result<GroupInfo> {
+    // 校验权限
+    get_user_group_role(db, uid, group_id).await?
+        .check_permission(ActionType::View)?;
+
     group_entity::Entity::find_group_info(db, uid, group_id)
         .await?
         .ok_or_else(|| Error::Custom(401, String::from("分组不存在")))
@@ -178,7 +186,9 @@ pub async fn list(db: &DatabaseConnection, uid: u32) -> Result<Vec<GroupInfo>> {
 }
 
 pub async fn get_memeber_list(db: &DatabaseConnection, uid: u32, group_id: u32) -> Result<Vec<MemberInfo>> {
-    check_is_owner_of_group(db, uid, group_id).await?;
+    // 校验权限
+    get_user_group_role(db, uid, group_id).await?
+        .check_permission(ActionType::View)?;
  
     group_member_entity::Entity::find_member_by_group(db, group_id).await.map_err(Into::into)
 }
@@ -189,8 +199,9 @@ pub async fn add_member(db: &DatabaseConnection, uid: u32, add_member: AddMember
 
     let tx = db.begin().await?;
     
-    // 只有拥有者可以添加成员
-    check_is_owner_of_group(&tx, uid, add_member.id).await?;
+    // 校验权限
+    get_user_group_role(db, uid, add_member.id).await?
+        .check_permission(ActionType::Danger)?;
 
     // 查询存在的用户id
     let exist_uids = user_entity::Entity::find_exist_uids(&tx, &add_member.member_uids).await?;
@@ -234,8 +245,9 @@ pub async fn add_member(db: &DatabaseConnection, uid: u32, add_member: AddMember
 pub async fn del_member(db: &DatabaseConnection, uid: u32, delete_member: DeleteMember) -> Result<DeleteResult> {
     let tx = db.begin().await?;
 
-    // 只有拥有者可以删除成员
-    check_is_owner_of_group(&tx, uid, delete_member.id).await?;
+    // 校验权限
+    get_user_group_role(db, uid, delete_member.id).await?
+        .check_permission(ActionType::Danger)?;
 
     let result = group_member_entity::Entity::delete_many()
         .filter(
@@ -256,8 +268,9 @@ pub async fn change_member_role(db: &DatabaseConnection, uid: u32, change_member
 
     let tx = db.begin().await?;
 
-    // 只有拥有者可以修改成员角色
-    check_is_owner_of_group(&tx, uid, change_member_role.id).await?;
+    // 校验权限
+    get_user_group_role(db, uid, change_member_role.id).await?
+        .check_permission(ActionType::Danger)?;
 
     let result = group_member_entity::Entity::update_many()
         .filter(
@@ -271,24 +284,4 @@ pub async fn change_member_role(db: &DatabaseConnection, uid: u32, change_member
     tx.commit().await?;
 
     Ok(result.into())
-}
-
-async fn check_is_owner_of_group<C>(c: &C, uid: u32, group_id: u32) -> Result<()>
-where C: ConnectionTrait
-{
-    // 判断是否是拥有者
-    let is_owner = group_member_entity::Entity::find()
-        .filter(
-            group_member_entity::Column::GroupId.eq(group_id)
-                .and(group_member_entity::Column::Uid.eq(uid))
-                .and(group_member_entity::Column::Role.eq(MemberRole::Owner))
-        )
-        .count(c)
-        .await?;
-
-    if is_owner == 0 {
-        Err(Error::Custom(405, String::from("没有权限")))
-    } else {
-        Ok(())
-    }
 }

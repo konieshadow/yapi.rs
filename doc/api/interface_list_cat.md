@@ -29,7 +29,7 @@ limit    | int  | 非必须   | 每页数量
 count            | int    | 必须     | 总数量
 total            | int    | 必须     | 总页数
 list[]           | Array  | 必须     | 列表
-&emsp;_id        | int    | 必须     | 接口id
+&emsp;id        | int    | 必须     | 接口id
 &emsp;uid        | int    | 必须     | 创建者id
 &emsp;edit_uid   | int    | 必须     | 编辑者id
 &emsp;catid      | int    | 必须     | 分类id

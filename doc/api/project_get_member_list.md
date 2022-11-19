@@ -25,7 +25,7 @@ id       | int  | 必须     | 分组id
 参数名称           | 类型   | 出现要求 | 描述
 :------------------|:-------|:-------|:--------------------
 []                 | Array  | 必须     | 列表
-&emsp;_id          | int    | 必须     | id
+&emsp;id          | int    | 必须     | id
 &emsp;uid          | int    | 必须     | 用户id
 &emsp;username     | string | 必须     | 用户名
 &emsp;email        | string | 必须     | 邮箱

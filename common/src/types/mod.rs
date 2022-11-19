@@ -1,13 +1,16 @@
 mod user;
 mod group;
+mod project;
+mod interface;
+mod role_permission;
 
-use sea_orm::{FromQueryResult};
 use serde::{Serialize, Deserialize};
+
 pub use user::*;
 pub use group::*;
-use validator::{Validate, ValidationError};
-
-use crate::utils::validator::valid_one_of;
+pub use project::*;
+pub use interface::*;
+pub use role_permission::*;
 
 fn page_default() -> usize {
     1
@@ -58,6 +61,12 @@ pub struct UpdateResult {
     pub modified_count: u32,
 }
 
+impl UpdateResult {
+    pub fn of(count: u32) -> Self {
+        Self { modified_count: count }
+    }
+}
+
 impl From<sea_orm::UpdateResult> for UpdateResult {
     fn from(r: sea_orm::UpdateResult) -> Self {
         Self { modified_count: r.rows_affected as u32 }
@@ -67,6 +76,12 @@ impl From<sea_orm::UpdateResult> for UpdateResult {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeleteResult {
     pub deleted_count: u32,
+}
+
+impl DeleteResult {
+    pub fn of(count: u32) -> Self {
+        Self { deleted_count: count }
+    }
 }
 
 impl From<sea_orm::DeleteResult> for DeleteResult {
@@ -86,49 +101,8 @@ pub struct GetById {
     pub id: u32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
-pub struct MemberInfo {
-    pub id: u32,
-    pub username: String,
-    pub email: String,
-    pub role: String,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AddMemberResult {
-    pub add_members: Vec<MemberInfo>,
-    pub exist_members: Vec<MemberInfo>,
-    pub no_members: Vec<u32>,
-}
-
-fn valid_role_fn(value: &str) -> Result<(), ValidationError> {
-    valid_one_of(value, vec!["owner", "dev", "guest"])
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
-pub struct AddMember {
-    pub id: u32,
-
-    #[validate(length(min = 1))]
-    pub member_uids: Vec<u32>,
-
-    #[validate(custom = "valid_role_fn")]
-    pub role: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
-pub struct DeleteMember {
-    pub id: u32,
-
-    pub member_uid: u32,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
-pub struct ChangeMemberRole {
-    pub id: u32,
-
-    pub member_uid: u32,
-
-    #[validate(custom = "valid_role_fn")]
-    pub role: String,
+pub struct NameValue {
+    pub name: String,
+    pub value: String,
 }

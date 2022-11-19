@@ -25,7 +25,7 @@ project_id | int  | 必须     | 项目id
 参数名称               | 类型   | 出现要求 | 描述
 :----------------------|:-------|:-------|:----------------
 []                     | Array  | 必须     | 列表
-&emsp;_id              | int    | 必须     | 分类id
+&emsp;id              | int    | 必须     | 分类id
 &emsp;uid              | int    | 必须     | 创建者id
 &emsp;project_id       | int    | 必须     | 项目id
 &emsp;name             | string | 必须     | 分类名称

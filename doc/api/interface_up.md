@@ -28,12 +28,12 @@ status                  | string | 非必须   | 完成状态 undone, done
 desc                    | string | 非必须   | 描述html
 markdown                | string | 非必须   | 描述markdown
 req_header[]            | Array  | 必须     | 请求头列表
-&emsp;_id               | int    | 必须     | 请求头id
+&emsp;id               | int    | 必须     | 请求头id
 &emsp;name              | string | 必须     | 请求头名称
 &emsp;value             | string | 必须     | 请求头值
 &emsp;required          | string | 必须     | 是否必须 0, 1
 req_query[]             | Array  | 非必须   | 请求查询参数列表
-&emsp;_id               | int    | 必须     | 请求参数id
+&emsp;id               | int    | 必须     | 请求参数id
 &emsp;name              | string | 必须     | 请求参数名称
 &emsp;desc              | string | 必须     | 请求参数描述
 &emsp;example           | string | 必须     | 请求参数示例
@@ -41,7 +41,7 @@ req_query[]             | Array  | 非必须   | 请求查询参数列表
 req_body_type           | string | 非必须   | 请求体类型 form, json, text, file, raw
 req_body_is_json_schema | bool   | 非必须   | 请求体是否是json_schema
 req_body_form[]         | Array  | 非必须   | 请求表单列表
-&emsp;_id               | int    | 必须     | 请求表单id
+&emsp;id               | int    | 必须     | 请求表单id
 &emsp;name              | string | 必须     | 请求表单名称
 &emsp;type              | string | 必须     | 请求表单类型 text, file
 &emsp;desc              | string | 必须     | 请求表单描述

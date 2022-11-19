@@ -25,7 +25,7 @@ id       | int  | 必须     | 项目id
 参数名称                | 类型   | 出现要求 | 描述
 :-----------------------|:-------|:-------|:--------------
 list[]                  | Array  | 必须     | 列表
-&emsp;_id               | int    | 必须     | 项目id
+&emsp;id               | int    | 必须     | 项目id
 &emsp;uid               | int    | 必须     | 创建者id
 &emsp;name              | string | 必须     | 项目名称
 &emsp;basepath          | string | 必须     | 接口基本路径
@@ -47,7 +47,7 @@ list[]                  | Array  | 必须     | 列表
 &emsp;&emsp;&emsp;name  | string | 必须     | 名称
 &emsp;&emsp;&emsp;value | string | 必须     | 值
 &emsp;cat[]             | Array  | 必须     | 分类列表
-&emsp;&emsp;_id         | int    | 必须     | 分类id
+&emsp;&emsp;id         | int    | 必须     | 分类id
 &emsp;&emsp;uid         | int    | 必须     | 创建者id
 &emsp;&emsp;name        | int    | 必须     | 分类名称
 &emsp;&emsp;project_id  | int    | 必须     | 项目id
