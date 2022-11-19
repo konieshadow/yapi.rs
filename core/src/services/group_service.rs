@@ -102,6 +102,8 @@ pub async fn up(db: &DatabaseConnection, group_up: GroupUp, uid: u32) -> Result<
 
     let result = group_entity::Entity::update_many()
         .set(group_entity::ActiveModel {
+            group_name: Set(group_up.group_name),
+            group_desc: Set(group_up.group_desc),
             ..Default::default()
         })
         .filter(group_entity::Column::Id.eq(group_up.id))
