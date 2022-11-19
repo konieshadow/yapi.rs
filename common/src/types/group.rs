@@ -6,7 +6,7 @@ use super::MemberInfo;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct GroupAdd {
-    #[validate(length(min = 2, max = 30, message = "长度必须在2到30之间"))]
+    #[validate(length(min = 1, max = 30, message = "长度必须在1到30之间"))]
     pub group_name: String,
 
     #[validate(length(max = 500, message = "长度必须在500字符之内"))]
@@ -20,10 +20,10 @@ pub struct GroupUp {
     pub id: u32,
 
     #[validate(length(min = 2, max = 30, message = "长度必须在2到30之间"))]
-    pub group_name: String,
+    pub group_name: Option<String>,
 
     #[validate(length(max = 500, message = "长度必须在500字符之内"))]
-    pub group_desc: String,
+    pub group_desc: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

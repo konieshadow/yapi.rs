@@ -1,6 +1,6 @@
 use sea_orm::{
     ActiveEnum, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter, Set,
-    TransactionTrait, ConnectionTrait, sea_query::Expr,
+    TransactionTrait, ConnectionTrait, sea_query::Expr, ActiveValue::NotSet, ActiveModelTrait,
 };
 use time::OffsetDateTime;
 use yapi_common::types::{GroupAdd, GroupInfo, GroupUp, GroupWithMember, UpdateResult, DeleteResult, MemberInfo, AddMember, AddMemberResult, DeleteMember, ChangeMemberRole};
@@ -100,12 +100,18 @@ pub async fn up(db: &DatabaseConnection, group_up: GroupUp, uid: u32) -> Result<
     // 只有拥有者可以修改
     check_is_owner_of_group(&tx, uid, group_up.id).await?;
 
+    let update_model = group_entity::ActiveModel {
+        group_name: group_up.group_name.map(Set).unwrap_or(NotSet),
+        group_desc: group_up.group_desc.map(Set).unwrap_or(NotSet),
+        ..Default::default()
+    };
+
+    if !update_model.is_changed() {
+        return Ok(UpdateResult::of(0))
+    }
+
     let result = group_entity::Entity::update_many()
-        .set(group_entity::ActiveModel {
-            group_name: Set(group_up.group_name),
-            group_desc: Set(group_up.group_desc),
-            ..Default::default()
-        })
+        .set(update_model)
         .filter(group_entity::Column::Id.eq(group_up.id))
         .exec(&tx)
         .await?;
