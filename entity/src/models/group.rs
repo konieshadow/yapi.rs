@@ -1,9 +1,11 @@
 use sea_orm::{entity::prelude::*, ConnectionTrait, sea_query::{Query, Expr, Alias, Cond}, JoinType, FromQueryResult, Order, Condition};
 use yapi_common::types::GroupInfo;
+use yapi_macros::AutoTimestampModel;
 
 use super::{base::TypeVisible, group_member};
+use crate::traits::AutoTimestamp;
 
-#[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
+#[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel, AutoTimestampModel)]
 #[sea_orm(table_name = "group")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increament = true)]

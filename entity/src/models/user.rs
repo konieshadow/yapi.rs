@@ -1,8 +1,12 @@
 use sea_orm::{entity::prelude::*, ConnectionTrait, QuerySelect, FromQueryResult};
 use serde::{Deserialize, Serialize};
 use yapi_common::types::{UserInfo, UserSearch};
+use yapi_macros::AutoTimestampModel;
 
-#[derive(Debug, Clone, PartialEq, Eq, EnumIter, Serialize, Deserialize, DeriveActiveEnum)]
+use crate::traits::AutoTimestamp;
+
+
+#[derive(Debug, Clone, PartialEq, Eq, EnumIter, Serialize, Deserialize, DeriveActiveEnum, AutoTimestampModel)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
 pub enum UserRole {
     #[sea_orm(string_value = "admin")]

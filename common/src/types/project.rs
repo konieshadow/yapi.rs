@@ -29,6 +29,9 @@ pub struct ProjectAdd {
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct ProjectUp {
     pub id: u32,
+    
+    #[validate(length(min = 1, max = 30, message = "长度必须在1到30之间"))]
+    pub name: Option<String>,
 
     pub group_id: Option<u32>,
 
@@ -43,8 +46,6 @@ pub struct ProjectUp {
 
     #[validate(custom = "valid_project_type_fn")]
     pub project_type: Option<String>,
-
-    pub tag: Option<Vec<ProjectTag>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -73,12 +74,6 @@ pub struct ProjectEnv {
     pub domain: String,
     pub header: Vec<NameValue>,
     pub global: Vec<NameValue>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProjectTag {
-    pub name: String,
-    pub desc: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

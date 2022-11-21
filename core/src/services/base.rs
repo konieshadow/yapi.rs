@@ -1,5 +1,5 @@
 use sea_orm::{
-    ColumnTrait, ConnectionTrait, DatabaseConnection, EntityTrait, FromQueryResult, QueryFilter,
+    ColumnTrait, ConnectionTrait, EntityTrait, FromQueryResult, QueryFilter,
     QuerySelect,
 };
 use yapi_entity::{
@@ -107,7 +107,7 @@ where
 }
 
 pub async fn get_user_project_role<C>(
-    db: &DatabaseConnection,
+    db: &C,
     uid: u32,
     project_id: u32,
 ) -> Result<PermissionRole>

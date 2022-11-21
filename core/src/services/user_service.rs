@@ -4,9 +4,9 @@ use sea_orm::{
     ColumnTrait, Condition, DatabaseConnection, EntityTrait, FromQueryResult, ItemsAndPagesNumber,
     PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, Set, TransactionTrait,
 };
-use time::OffsetDateTime;
 use yapi_common::types::{PageList, Paginator, UserInfo, UserLogin, UserReg, UserSearch};
 use yapi_entity::base::{TypeVisible};
+use yapi_entity::traits::AutoTimestamp;
 use yapi_entity::{group_entity};
 use yapi_entity::user_entity::{self, UserRole};
 
@@ -33,17 +33,13 @@ pub async fn reg(db: &DatabaseConnection, user_reg: UserReg) -> Result<UserInfo>
     // 加密密码
     let password = hash_password(user_reg.password).await?;
 
-    let timestamp = OffsetDateTime::now_utc().unix_timestamp() as u32;
-
     // 插入记录
     let user = user_entity::ActiveModel {
         username: Set(user_reg.username.clone()),
         email: Set(user_reg.email.clone()),
         password: Set(password),
         role: Set(UserRole::Member),
-        add_time: Set(timestamp),
-        up_time: Set(timestamp),
-        ..Default::default()
+        ..AutoTimestamp::default_add()
     };
 
     let user_id = user_entity::Entity::insert(user)
@@ -61,9 +57,7 @@ pub async fn reg(db: &DatabaseConnection, user_reg: UserReg) -> Result<UserInfo>
         group_name: Set(String::new()),
         group_desc: Set(String::new()),
         group_type: Set(TypeVisible::Private),
-        add_time: Set(timestamp),
-        up_time: Set(timestamp),
-        ..Default::default()
+        ..AutoTimestamp::default_add()
     };
     group_entity::Entity::insert(user_private_gorup)
         .exec(&tx)

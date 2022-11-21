@@ -1,8 +1,8 @@
-use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Expr, Alias}, JoinType};
+use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Expr, Alias, Cond}, JoinType};
 use yapi_common::types::ProjectInfo;
 use yapi_macros::AutoTimestampModel;
 
-use crate::{base::MemberRole, group_member_entity, project_member_entity, project_env_entity};
+use crate::{base::MemberRole, group_member_entity, project_member_entity, project_env_entity, group_entity};
 use crate::traits::AutoTimestamp;
 
 use super::base::TypeVisible;
@@ -75,47 +75,75 @@ impl Entity {
     {
         #[derive(FromQueryResult)]
         struct Result {
+            group_uid: u32,
+            group_type: TypeVisible,
             group_role: Option<MemberRole>,
             project_role: Option<MemberRole>,
         }
 
+        let none_permissoin = 10000;
+
         let mut stmt = Query::select();
-        stmt.expr_as(Expr::col((group_member_entity::Entity, group_member_entity::Column::Role)), Alias::new("group_role"))
+        stmt.expr_as(Expr::col((group_entity::Entity, group_entity::Column::Uid)), Alias::new("group_uid"))
+            .expr_as(Expr::col((group_entity::Entity, group_entity::Column::GroupType)), Alias::new("group_type"))
+            .expr_as(Expr::col((group_member_entity::Entity, group_member_entity::Column::Role)), Alias::new("group_role"))
             .expr_as(Expr::col((project_member_entity::Entity, project_member_entity::Column::Role)), Alias::new("project_role"))
             .from(Entity)
+            .join(JoinType::InnerJoin,
+                group_entity::Entity,
+                Expr::tbl(group_entity::Entity, group_entity::Column::Id)
+                    .equals(Entity, Column::GroupId)
+            )
             .join(JoinType::LeftJoin,
                 group_member_entity::Entity,
-                Expr::tbl(group_member_entity::Entity, group_member_entity::Column::GroupId)
-                    .equals(Entity, Column::GroupId),
+                Cond::all()
+                    .add(Expr::tbl(group_member_entity::Entity, group_member_entity::Column::GroupId)
+                        .equals(Entity, Column::GroupId))
+                    .add(Expr::tbl(group_member_entity::Entity, group_member_entity::Column::Uid)
+                        .eq(uid))
             )
             .join(JoinType::LeftJoin,
                 project_member_entity::Entity,
-                Expr::tbl(project_member_entity::Entity, project_member_entity::Column::ProjectId)
-                    .equals(Entity, Column::Id),
+                Cond::all()
+                    .add(Expr::tbl(project_member_entity::Entity, project_member_entity::Column::ProjectId)
+                        .equals(Entity, Column::Id))
+                    .add(Expr::tbl(project_member_entity::Entity, group_member_entity::Column::Uid)
+                        .eq(uid))
             )
-            .and_where(Column::Id.eq(project_id))
-            .and_where(Column::Uid.eq(uid));
+            .and_where(Column::Id.eq(project_id));
             
         let builder = db.get_database_backend();
         let result = Result::find_by_statement(builder.build(&stmt))
             .one(db)
             .await?;
 
-        match result {
-            Some(result) => {
-                let group_role_value = result.group_role.to_owned().map(|m| m as usize).unwrap_or(10000);
-                let project_role_value = result.project_role.to_owned().map(|m| m as usize).unwrap_or(10000);
+        if let Some(result) = result {
+            // 判断分组类型
+            if result.group_type == TypeVisible::Private {
+                // 私有分组
+                if result.group_uid == uid {
+                    // 是本人的
+                    Ok(Some(MemberRole::Owner))
+                } else {
+                    // 不是本人的
+                    Ok(None)
+                }
+            } else {
+                // 普通分组，取分组角色和项目角色中等级高的
+                let group_role_value = result.group_role.to_owned().map(|m| m as usize).unwrap_or(none_permissoin);
+                let project_role_value = result.project_role.to_owned().map(|m| m as usize).unwrap_or(none_permissoin);
                 if group_role_value > project_role_value {
-                    Ok(result.group_role)
-                } else if group_role_value < project_role_value {
                     Ok(result.project_role)
-                } else if project_role_value == 10000 {
+                } else if group_role_value < project_role_value {
+                    Ok(result.group_role)
+                } else if project_role_value == none_permissoin {
                     Ok(None)
                 } else {
                     Ok(result.project_role)
                 }
-            },
-            None => Ok(None)
+            }
+        } else {
+            Ok(None)
         }
     }
 

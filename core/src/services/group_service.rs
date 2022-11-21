@@ -2,11 +2,10 @@ use sea_orm::{
     ActiveEnum, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter, Set,
     TransactionTrait, sea_query::Expr, ActiveValue::NotSet,
 };
-use time::OffsetDateTime;
 use yapi_common::types::{GroupAdd, GroupInfo, GroupUp, GroupWithMember, UpdateResult, DeleteResult, MemberInfo, AddMember, AddMemberResult, DeleteMember, ChangeMemberRole};
 use yapi_entity::{
     base::{MemberRole, TypeVisible},
-    group_entity, group_member_entity, user_entity,
+    group_entity, group_member_entity, user_entity, traits::AutoTimestamp,
 };
 
 use crate::{error::Error, Result};
@@ -45,17 +44,13 @@ pub async fn add(
         return Err(Error::Custom(401, String::from("项目分组名已存在")));
     }
 
-    let timestamp = OffsetDateTime::now_utc().unix_timestamp() as u32;
-
     // 插入分组
     let group = group_entity::ActiveModel {
         uid: Set(uid),
         group_name: Set(group_add.group_name.clone()),
         group_desc: Set(group_add.group_desc.clone()),
         group_type: Set(TypeVisible::Public),
-        add_time: Set(timestamp),
-        up_time: Set(timestamp),
-        ..Default::default()
+        ..AutoTimestamp::default_add()
     };
 
     let group_id = group_entity::Entity::insert(group)
@@ -103,13 +98,10 @@ pub async fn up(db: &DatabaseConnection, group_up: GroupUp, uid: u32) -> Result<
     get_user_group_role(&tx, uid, group_up.id).await?
         .check_permission(ActionType::Edit)?;
 
-    let timestamp = OffsetDateTime::now_utc().unix_timestamp() as u32;
-
     let update_model = group_entity::ActiveModel {
         group_name: group_up.group_name.map(Set).unwrap_or(NotSet),
         group_desc: group_up.group_desc.map(Set).unwrap_or(NotSet),
-        up_time: Set(timestamp),
-        ..Default::default()
+        ..AutoTimestamp::default_up()
     };
 
     let result = group_entity::Entity::update_many()

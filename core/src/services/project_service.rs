@@ -1,6 +1,7 @@
-use sea_orm::{DatabaseConnection, TransactionTrait, EntityTrait, Set, ActiveEnum};
-use yapi_common::types::{ProjectAdd, ProjectInfo};
-use yapi_entity::{project_entity, base::{TypeVisible, NameValueVec, AutoTimestamp}, project_env_entity, interface_cat_entity};
+use regex::Regex;
+use sea_orm::{DatabaseConnection, TransactionTrait, EntityTrait, Set, ActiveEnum, QueryFilter, ColumnTrait, ActiveValue::NotSet};
+use yapi_common::types::{ProjectAdd, ProjectInfo, ProjectUp, UpdateResult};
+use yapi_entity::{project_entity, base::{TypeVisible, NameValueVec}, project_env_entity, interface_cat_entity, traits::AutoTimestamp};
 
 use crate::{Result, error::Error};
 
@@ -8,6 +9,7 @@ use super::base::{get_user_project_role, get_user_group_role, ActionType};
 
 pub async fn add(db: &DatabaseConnection, uid: u32, project_add: ProjectAdd) -> Result<ProjectInfo> {
     let project_type = TypeVisible::try_from_value(&project_add.project_type)?;
+    let basepath = handle_basepath(&project_add.basepath)?;
 
     let tx = db.begin().await?;
 
@@ -18,7 +20,7 @@ pub async fn add(db: &DatabaseConnection, uid: u32, project_add: ProjectAdd) -> 
         uid: Set(uid),
         group_id: Set(project_add.group_id),
         name: Set(project_add.name),
-        basepath: Set(project_add.basepath),
+        basepath: Set(basepath),
         desc: Set(project_add.desc),
         project_type: Set(project_type),
         icon: Set(String::new()),
@@ -62,4 +64,58 @@ pub async fn add(db: &DatabaseConnection, uid: u32, project_add: ProjectAdd) -> 
     tx.commit().await?;
 
     Ok(project_info)
+}
+
+pub async fn up(db: &DatabaseConnection, uid: u32, project_up: ProjectUp) -> Result<UpdateResult> {
+    let project_type = project_up.project_type.map(|v| TypeVisible::try_from_value(&v)).transpose()?;
+    let basepath = project_up.basepath.map(|v| handle_basepath(&v)).transpose()?;
+
+    let tx = db.begin().await?;
+
+    // 校验权限
+    get_user_project_role(&tx, uid, project_up.id).await?.check_permission(ActionType::Edit)?;
+
+    // 校验修改分组权限
+    if let Some(group_id) = project_up.group_id {
+        get_user_group_role(&tx, uid, group_id).await?.check_permission(ActionType::Edit)?;
+    }
+
+    let update_model = project_entity::ActiveModel {
+        name: project_up.name.map(Set).unwrap_or(NotSet),
+        group_id: project_up.group_id.map(Set).unwrap_or(NotSet),
+        basepath: basepath.map(Set).unwrap_or(NotSet),
+        desc: project_up.desc.map(Set).unwrap_or(NotSet),
+        is_json5: project_up.is_json5.map(Set).unwrap_or(NotSet),
+        switch_notice: project_up.switch_notice.map(Set).unwrap_or(NotSet),
+        project_type: project_type.map(Set).unwrap_or(NotSet),
+        ..AutoTimestamp::default_up()
+    };
+
+    let result = project_entity::Entity::update_many()
+        .set(update_model)
+        .filter(project_entity::Column::Id.eq(project_up.id))
+        .exec(&tx)
+        .await?;
+
+    tx.commit().await?;
+
+    Ok(result.into())
+}
+
+fn handle_basepath(basepath: &str) -> Result<String> {
+    if basepath.is_empty() || basepath == "/" {
+        return Ok(String::new());
+    }
+
+    let mut basepath = basepath.to_owned();
+    if basepath[(basepath.len() - 1)..] == *"/" {
+        basepath = String::from(&basepath[..(basepath.len() - 1)])
+    }
+
+    let reg = Regex::new(r"!/^/[a-zA-Z0-9\-/._]+$").unwrap();
+    if reg.is_match(&basepath) {
+        Err(Error::Custom(401, String::from("basepath格式有误")))
+    } else {
+        Ok(basepath) 
+    }
 }

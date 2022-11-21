@@ -1,6 +1,9 @@
 use sea_orm::entity::prelude::*;
 use serde::{Serialize, Deserialize};
 use yapi_common::types::NameValue;
+use yapi_macros::AutoTimestampModel;
+
+use crate::traits::AutoTimestamp;
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
@@ -113,7 +116,7 @@ pub struct ReqBodyForm {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct ReqBodyForms(Vec<ReqBodyForm>);
 
-#[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
+#[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel, AutoTimestampModel)]
 #[sea_orm(table_name = "interface")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increament = true)]
