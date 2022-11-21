@@ -4,6 +4,7 @@ mod project;
 mod interface;
 mod role_permission;
 
+use sea_orm::FromJsonQueryResult;
 use serde::{Serialize, Deserialize};
 
 pub use user::*;
@@ -101,7 +102,7 @@ pub struct GetById {
     pub id: u32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct NameValue {
     pub name: String,
     pub value: String,

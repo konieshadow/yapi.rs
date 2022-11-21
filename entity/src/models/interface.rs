@@ -1,7 +1,6 @@
 use sea_orm::entity::prelude::*;
 use serde::{Serialize, Deserialize};
-
-use super::base::NameValue;
+use yapi_common::types::NameValue;
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]

@@ -18,9 +18,8 @@ Authorization | string | 必须     | Token xxxxxx
 :------------|:-------|:-------|:--------------
 name         | string | 必须     | 项目名称
 group_id     | int    | 必须     | 分组id
-basepath     | string | 必须     | 图标
-icon         | string | 必须     | 图标
-color        | string | 必须     | 图标颜色
+basepath     | string | 必须     | 基础路径
+desc         | string | 必须     | 描述
 project_type | string | 必须     | public、private
 
 ### 响应参数
@@ -42,6 +41,7 @@ icon              | string | 必须     | 图标
 is_json5          | bool   | 必须     | 是否开启json5
 is_mock_open      | bool   | 必须     | 是否开启mock
 env[]             | Array  | 必须     | 环境列表
+&emsp;id          | int    | 必须     | 环境id
 &emsp;name        | string | 必须     | 环境名称
 &emsp;domain      | string | 必须     | 环境域名
 &emsp;header[]    | Array  | 必须     | Header列表

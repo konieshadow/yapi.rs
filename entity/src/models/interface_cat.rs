@@ -1,4 +1,7 @@
-use sea_orm::entity::prelude::*;
+use time::OffsetDateTime;
+use sea_orm::{entity::prelude::*, Set};
+
+use crate::base::AutoTimestamp;
 
 #[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "interface_cat")]
@@ -7,6 +10,10 @@ pub struct Model {
     pub id: u32,
 
     pub uid: u32,
+
+    pub name: String,
+
+    pub desc: String,
 
     #[sea_orm(indexed)]
     pub project_id: u32,
@@ -19,3 +26,22 @@ pub struct Model {
 pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl AutoTimestamp for ActiveModel {
+    fn default_add() -> Self {
+        let timestamp = OffsetDateTime::now_utc().unix_timestamp() as u32;
+        Self {
+            add_time: Set(timestamp),
+            up_time: Set(timestamp),
+            ..Default::default()
+        }
+    }
+
+    fn default_up() -> Self {
+        let timestamp = OffsetDateTime::now_utc().unix_timestamp() as u32;
+        Self {
+            up_time: Set(timestamp),
+            ..Default::default()
+        }
+    }
+}

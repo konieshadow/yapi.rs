@@ -12,12 +12,12 @@ const SCHEME_PREFIX: &str = "Token ";
 
 #[derive(Debug, Clone)]
 pub struct AuthUser {
-    pub user_id: u32,
+    pub id: u32,
 }
 
 impl AuthUser {
-    pub fn new(user_id: u32) -> Self {
-        Self { user_id }
+    pub fn new(id: u32) -> Self {
+        Self { id }
     }
 }
 
@@ -26,7 +26,7 @@ pub struct MaybeAuthUser(pub Option<AuthUser>);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct AuthUserClaims {
-    user_id: u32,
+    id: u32,
     exp: i64,
 }
 
@@ -36,7 +36,7 @@ impl AuthUser {
             .expect("HMAC can take key of any size");
 
         AuthUserClaims {
-            user_id: self.user_id,
+            id: self.id,
             exp: (OffsetDateTime::now_utc() + DEFAULT_SESSION_LENGTH).unix_timestamp(),
         }
         .sign_with_key(&hmac)
@@ -69,14 +69,14 @@ impl AuthUser {
         let (_, claims) = jwt.into();
 
         Ok(Self {
-            user_id: claims.user_id
+            id: claims.id
         })
     }
 }
 
 impl MaybeAuthUser {
     pub fn user_id(&self) -> Option<u32> {
-        self.0.as_ref().map(|a| a.user_id)
+        self.0.as_ref().map(|a| a.id)
     }
 }
 

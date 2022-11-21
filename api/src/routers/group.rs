@@ -25,7 +25,7 @@ async fn add(
     auth_user: AuthUser,
     ValidateJson(req): ValidateJson<GroupAdd>
 ) -> Result<ResData<GroupWithMember>> {
-    let data = group_service::add(&ctx.db, req, auth_user.user_id).await?;
+    let data = group_service::add(&ctx.db, req, auth_user.id).await?;
 
     Ok(ResData::success(data))
 }
@@ -35,7 +35,7 @@ async fn up(
     auth_user: AuthUser,
     ValidateJson(req): ValidateJson<GroupUp>
 ) -> Result<ResData<UpdateResult>> {
-    let data = group_service::up(&ctx.db, req, auth_user.user_id).await?;
+    let data = group_service::up(&ctx.db, req, auth_user.id).await?;
 
     Ok(ResData::success(data))
 }
@@ -45,7 +45,7 @@ async fn del(
     auth_user: AuthUser,
     Query(req): Query<GetById>,
 ) -> Result<ResData<DeleteResult>> {
-    let data = group_service::del(&ctx.db, auth_user.user_id, req.id).await?;
+    let data = group_service::del(&ctx.db, auth_user.id, req.id).await?;
 
     Ok(ResData::success(data))
 }
@@ -55,7 +55,7 @@ async fn get_group(
     auth_user: AuthUser,
     Query(req): Query<GetById>,
 ) -> Result<ResData<GroupInfo>> {
-    let data = group_service::get(&ctx.db, auth_user.user_id, req.id).await?;
+    let data = group_service::get(&ctx.db, auth_user.id, req.id).await?;
 
     Ok(ResData::success(data))
 }
@@ -64,7 +64,7 @@ async fn list_group(
     ctx: Extension<Context>,
     auth_user: AuthUser,
 ) -> Result<ResData<Vec<GroupInfo>>> {
-    let data = group_service::list(&ctx.db, auth_user.user_id).await?;
+    let data = group_service::list(&ctx.db, auth_user.id).await?;
 
     Ok(ResData::success(data))
 }
@@ -74,7 +74,7 @@ async fn get_memeber_list(
     auth_user: AuthUser,
     Query(req): Query<GetById>,
 ) -> Result<ResData<Vec<MemberInfo>>> {
-    let data = group_service::get_memeber_list(&ctx.db, auth_user.user_id, req.id).await?;
+    let data = group_service::get_memeber_list(&ctx.db, auth_user.id, req.id).await?;
 
     Ok(ResData::success(data))
 }
@@ -84,7 +84,7 @@ async fn add_member(
     auth_user: AuthUser,
     ValidateJson(req): ValidateJson<AddMember>,
 ) -> Result<ResData<AddMemberResult>> {
-    let data = group_service::add_member(&ctx.db, auth_user.user_id, req).await?;
+    let data = group_service::add_member(&ctx.db, auth_user.id, req).await?;
 
     Ok(ResData::success(data))
 }
@@ -94,7 +94,7 @@ async fn delete_member(
     auth_user: AuthUser,
     ValidateJson(req): ValidateJson<DeleteMember>,
 ) -> Result<ResData<DeleteResult>> {
-    let data = group_service::del_member(&ctx.db, auth_user.user_id, req).await?;
+    let data = group_service::del_member(&ctx.db, auth_user.id, req).await?;
 
     Ok(ResData::success(data))
 }
@@ -104,7 +104,7 @@ async fn change_member_role(
     auth_user: AuthUser,
     ValidateJson(req): ValidateJson<ChangeMemberRole>,
 ) -> Result<ResData<UpdateResult>> {
-    let data = group_service::change_member_role(&ctx.db, auth_user.user_id, req).await?;
+    let data = group_service::change_member_role(&ctx.db, auth_user.id, req).await?;
 
     Ok(ResData::success(data))
 }

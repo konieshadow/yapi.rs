@@ -1,6 +1,8 @@
-use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Expr, Alias}, JoinType};
+use time::OffsetDateTime;
+use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Expr, Alias}, JoinType, Set};
+use yapi_common::types::ProjectInfo;
 
-use crate::{base::MemberRole, group_member_entity, project_member_entity};
+use crate::{base::{MemberRole, AutoTimestamp}, group_member_entity, project_member_entity, project_env_entity};
 
 use super::base::TypeVisible;
 
@@ -43,6 +45,28 @@ pub struct Model {
 pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl Model {
+    pub fn to_project_info(self) -> ProjectInfo {
+        ProjectInfo {
+            id: self.id,
+            uid: self.uid,
+            name: self.name,
+            basepath: self.basepath,
+            switch_notice: self.switch_notice,
+            desc: self.desc,
+            group_id: self.group_id,
+            project_type: self.project_type.into_value(),
+            color: self.color,
+            icon: self.icon,
+            is_json5: self.is_json5,
+            is_mock_open: self.is_mock_opened,
+            env: Vec::new(),
+            add_time: self.add_time,
+            up_time: self.up_time,
+        }
+    }
+}
 
 impl Entity {
     pub async fn find_project_role_by_uid<C>(db: &C, uid: u32, project_id: u32) -> Result<Option<MemberRole>, DbErr>
@@ -91,6 +115,47 @@ impl Entity {
                 }
             },
             None => Ok(None)
+        }
+    }
+
+    pub async fn find_project_info<C>(db: &C, project_id: u32) -> Result<Option<ProjectInfo>, DbErr>
+    where C: ConnectionTrait
+    {
+        let project = Entity::find_by_id(project_id)
+            .one(db)
+            .await?
+            .map(|m| m.to_project_info());
+
+        if project.is_none() {
+            return Ok(None)
+        }
+
+        if let Some(mut project) = project {
+        // 查询项目环境
+            let project_env = project_env_entity::Entity::find_project_info(db, project_id).await?;
+            project.env = project_env;
+            Ok(Some(project))
+        } else {
+            Ok(None)
+        }
+    }
+}
+
+impl AutoTimestamp for ActiveModel {
+    fn default_add() -> Self {
+        let timestamp = OffsetDateTime::now_utc().unix_timestamp() as u32;
+        Self {
+            add_time: Set(timestamp),
+            up_time: Set(timestamp),
+            ..Default::default()
+        }
+    }
+
+    fn default_up() -> Self {
+        let timestamp = OffsetDateTime::now_utc().unix_timestamp() as u32;
+        Self {
+            up_time: Set(timestamp),
+            ..Default::default()
         }
     }
 }

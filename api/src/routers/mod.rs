@@ -2,9 +2,11 @@ use axum::Router;
 
 mod user;
 mod group;
+mod project;
 
 pub fn routers() -> Router {
     let api_routers = user::router()
-        .merge(group::router());
+        .merge(group::router())
+        .merge(project::router());
     Router::new().nest("/api", api_routers)
 }

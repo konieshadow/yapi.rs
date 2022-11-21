@@ -79,7 +79,7 @@ where
             // 私有分组
             if group_info.uid == uid || user_role == UserRole::Admin {
                 // 本人或管理员
-                Ok(PermissionRole::Guest)
+                Ok(PermissionRole::Dev)
             } else {
                 // 非本人
                 Ok(PermissionRole::None)

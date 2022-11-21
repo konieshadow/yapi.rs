@@ -27,7 +27,7 @@ limit    | int  | 非必须   | 每页数量
 参数名称                | 类型   | 出现要求 | 描述
 :-----------------------|:-------|:-------|:--------------
 list[]                  | Array  | 必须     | 列表
-&emsp;id               | int    | 必须     | 项目id
+&emsp;id                | int    | 必须     | 项目id
 &emsp;uid               | int    | 必须     | 创建者id
 &emsp;name              | string | 必须     | 项目名称
 &emsp;basepath          | string | 必须     | 接口基本路径
@@ -38,6 +38,7 @@ list[]                  | Array  | 必须     | 列表
 &emsp;color             | string | 必须     | 图标颜色
 &emsp;icon              | string | 必须     | 图标
 &emsp;env[]             | Array  | 必须     | 环境列表
+&emsp;id                | int    | 必须     | 环境id
 &emsp;&emsp;name        | string | 必须     | 环境名称
 &emsp;&emsp;domain      | string | 必须     | 环境域名
 &emsp;&emsp;header[]    | Array  | 必须     | Header列表

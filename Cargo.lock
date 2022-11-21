@@ -2966,6 +2966,7 @@ dependencies = [
  "regex",
  "sea-orm",
  "serde",
+ "serde_json",
  "validator",
 ]
 

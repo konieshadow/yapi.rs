@@ -1,6 +1,6 @@
 use sea_orm::{
     ActiveEnum, ColumnTrait, DatabaseConnection, EntityTrait, PaginatorTrait, QueryFilter, Set,
-    TransactionTrait, sea_query::Expr, ActiveValue::NotSet, ActiveModelTrait,
+    TransactionTrait, sea_query::Expr, ActiveValue::NotSet,
 };
 use time::OffsetDateTime;
 use yapi_common::types::{GroupAdd, GroupInfo, GroupUp, GroupWithMember, UpdateResult, DeleteResult, MemberInfo, AddMember, AddMemberResult, DeleteMember, ChangeMemberRole};
@@ -103,15 +103,14 @@ pub async fn up(db: &DatabaseConnection, group_up: GroupUp, uid: u32) -> Result<
     get_user_group_role(&tx, uid, group_up.id).await?
         .check_permission(ActionType::Edit)?;
 
+    let timestamp = OffsetDateTime::now_utc().unix_timestamp() as u32;
+
     let update_model = group_entity::ActiveModel {
         group_name: group_up.group_name.map(Set).unwrap_or(NotSet),
         group_desc: group_up.group_desc.map(Set).unwrap_or(NotSet),
+        up_time: Set(timestamp),
         ..Default::default()
     };
-
-    if !update_model.is_changed() {
-        return Ok(UpdateResult::of(0))
-    }
 
     let result = group_entity::Entity::update_many()
         .set(update_model)
@@ -194,8 +193,7 @@ pub async fn get_memeber_list(db: &DatabaseConnection, uid: u32, group_id: u32) 
 }
 
 pub async fn add_member(db: &DatabaseConnection, uid: u32, add_member: AddMember) -> Result<AddMemberResult> {
-    let member_role = MemberRole::try_from_str(&add_member.role)
-        .ok_or(Error::BadRequest)?;
+    let member_role = MemberRole::try_from_value(&add_member.role)?;
 
     let tx = db.begin().await?;
     
@@ -263,8 +261,7 @@ pub async fn del_member(db: &DatabaseConnection, uid: u32, delete_member: Delete
 }
 
 pub async fn change_member_role(db: &DatabaseConnection, uid: u32, change_member_role: ChangeMemberRole) -> Result<UpdateResult> {
-    let member_role = MemberRole::try_from_str(&change_member_role.role)
-        .ok_or(Error::BadRequest)?;
+    let member_role = MemberRole::try_from_value(&change_member_role.role)?;
 
     let tx = db.begin().await?;
 

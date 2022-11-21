@@ -19,7 +19,8 @@ pub struct ProjectAdd {
     #[validate(length(max = 100, message = "长度不能大于100"))]
     pub basepath: String,
 
-    pub icon: String,
+    #[validate(length(max = 200, message = "长度不能大于200"))]
+    pub desc: String,
 
     #[validate(custom = "valid_project_type_fn")]
     pub project_type: String,
@@ -67,6 +68,7 @@ pub struct ProjectInfo {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProjectEnv {
+    pub id: u32,
     pub name: String,
     pub domain: String,
     pub header: Vec<NameValue>,
