@@ -2,10 +2,6 @@ use sea_orm::entity::prelude::*;
 use serde::{Serialize, Deserialize};
 use yapi_common::types::NameValue;
 
-pub trait AutoTimestamp {
-    fn default_add() -> Self;
-    fn default_up() -> Self;
-}
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumIter, Serialize, Deserialize, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]

@@ -1,10 +1,11 @@
-use time::OffsetDateTime;
-use sea_orm::{entity::prelude::*, ConnectionTrait, Set};
+use sea_orm::{entity::prelude::*, ConnectionTrait};
 use yapi_common::types::ProjectEnv;
+use yapi_macros::AutoTimestampModel;
 
-use crate::base::{NameValueVec, AutoTimestamp};
+use crate::base::NameValueVec;
+use crate::traits::AutoTimestamp;
 
-#[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
+#[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel, AutoTimestampModel)]
 #[sea_orm(table_name = "project_env")]
 pub struct Model {
 
@@ -35,26 +36,6 @@ impl Model {
             domain: self.domain,
             header: self.header.0,
             global: self.global.0,
-        }
-    }
-}
-
-
-impl AutoTimestamp for ActiveModel {
-    fn default_add() -> Self {
-        let timestamp = OffsetDateTime::now_utc().unix_timestamp() as u32;
-        Self {
-            add_time: Set(timestamp),
-            up_time: Set(timestamp),
-            ..Default::default()
-        }
-    }
-
-    fn default_up() -> Self {
-        let timestamp = OffsetDateTime::now_utc().unix_timestamp() as u32;
-        Self {
-            up_time: Set(timestamp),
-            ..Default::default()
         }
     }
 }

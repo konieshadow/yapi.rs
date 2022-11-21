@@ -1,9 +1,9 @@
-use time::OffsetDateTime;
-use sea_orm::{entity::prelude::*, Set};
+use sea_orm::entity::prelude::*;
+use yapi_macros::AutoTimestampModel;
 
-use crate::base::AutoTimestamp;
+use crate::traits::AutoTimestamp;
 
-#[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
+#[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel, AutoTimestampModel)]
 #[sea_orm(table_name = "interface_cat")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increament = true)]
@@ -26,22 +26,3 @@ pub struct Model {
 pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
-
-impl AutoTimestamp for ActiveModel {
-    fn default_add() -> Self {
-        let timestamp = OffsetDateTime::now_utc().unix_timestamp() as u32;
-        Self {
-            add_time: Set(timestamp),
-            up_time: Set(timestamp),
-            ..Default::default()
-        }
-    }
-
-    fn default_up() -> Self {
-        let timestamp = OffsetDateTime::now_utc().unix_timestamp() as u32;
-        Self {
-            up_time: Set(timestamp),
-            ..Default::default()
-        }
-    }
-}

@@ -3004,11 +3004,22 @@ name = "yapi-entity"
 version = "0.1.0"
 dependencies = [
  "log",
+ "quote",
  "sea-orm",
  "serde",
  "serde_json",
+ "syn",
  "time",
  "yapi-common",
+ "yapi-macros",
+]
+
+[[package]]
+name = "yapi-macros"
+version = "0.1.0"
+dependencies = [
+ "quote",
+ "syn",
 ]
 
 [[package]]

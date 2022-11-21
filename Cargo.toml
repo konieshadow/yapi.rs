@@ -6,7 +6,7 @@ edition = "2021"
 publish = false
 
 [workspace]
-members = [".", "api", "common", "core", "entity", "migration"]
+members = [".", "api", "common", "core", "entity", "migration", "macros"]
 
 [dependencies]
 yapi-migration = { path = "migration" }

@@ -1,12 +1,13 @@
-use time::OffsetDateTime;
-use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Expr, Alias}, JoinType, Set};
+use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Expr, Alias}, JoinType};
 use yapi_common::types::ProjectInfo;
+use yapi_macros::AutoTimestampModel;
 
-use crate::{base::{MemberRole, AutoTimestamp}, group_member_entity, project_member_entity, project_env_entity};
+use crate::{base::MemberRole, group_member_entity, project_member_entity, project_env_entity};
+use crate::traits::AutoTimestamp;
 
 use super::base::TypeVisible;
 
-#[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
+#[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel, AutoTimestampModel)]
 #[sea_orm(table_name = "project")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increament = true)]
@@ -137,25 +138,6 @@ impl Entity {
             Ok(Some(project))
         } else {
             Ok(None)
-        }
-    }
-}
-
-impl AutoTimestamp for ActiveModel {
-    fn default_add() -> Self {
-        let timestamp = OffsetDateTime::now_utc().unix_timestamp() as u32;
-        Self {
-            add_time: Set(timestamp),
-            up_time: Set(timestamp),
-            ..Default::default()
-        }
-    }
-
-    fn default_up() -> Self {
-        let timestamp = OffsetDateTime::now_utc().unix_timestamp() as u32;
-        Self {
-            up_time: Set(timestamp),
-            ..Default::default()
         }
     }
 }
