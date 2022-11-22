@@ -1,5 +1,5 @@
-use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Expr, Alias, Cond}, JoinType};
-use yapi_common::types::ProjectInfo;
+use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Expr, Alias, Cond}, QueryOrder};
+use yapi_common::{types::{ProjectInfo, ProjectList, ProjectItem}, traits::Paginator};
 use yapi_macros::AutoTimestampModel;
 
 use crate::{base::MemberRole, group_member_entity, project_member_entity, project_env_entity, group_entity};
@@ -48,8 +48,8 @@ pub enum Relation {}
 impl ActiveModelBehavior for ActiveModel {}
 
 impl Model {
-    pub fn to_project_info(self) -> ProjectInfo {
-        ProjectInfo {
+    pub fn to_project_item(self) -> ProjectItem {
+        ProjectItem {
             id: self.id,
             uid: self.uid,
             name: self.name,
@@ -62,7 +62,6 @@ impl Model {
             icon: self.icon,
             is_json5: self.is_json5,
             is_mock_open: self.is_mock_opened,
-            env: Vec::new(),
             add_time: self.add_time,
             up_time: self.up_time,
         }
@@ -89,21 +88,18 @@ impl Entity {
             .expr_as(Expr::col((group_member_entity::Entity, group_member_entity::Column::Role)), Alias::new("group_role"))
             .expr_as(Expr::col((project_member_entity::Entity, project_member_entity::Column::Role)), Alias::new("project_role"))
             .from(Entity)
-            .join(JoinType::InnerJoin,
-                group_entity::Entity,
+            .inner_join(group_entity::Entity,
                 Expr::tbl(group_entity::Entity, group_entity::Column::Id)
                     .equals(Entity, Column::GroupId)
             )
-            .join(JoinType::LeftJoin,
-                group_member_entity::Entity,
+            .left_join(group_member_entity::Entity,
                 Cond::all()
                     .add(Expr::tbl(group_member_entity::Entity, group_member_entity::Column::GroupId)
                         .equals(Entity, Column::GroupId))
                     .add(Expr::tbl(group_member_entity::Entity, group_member_entity::Column::Uid)
                         .eq(uid))
             )
-            .join(JoinType::LeftJoin,
-                project_member_entity::Entity,
+            .left_join(project_member_entity::Entity,
                 Cond::all()
                     .add(Expr::tbl(project_member_entity::Entity, project_member_entity::Column::ProjectId)
                         .equals(Entity, Column::Id))
@@ -150,22 +146,37 @@ impl Entity {
     pub async fn find_project_info<C>(db: &C, project_id: u32) -> Result<Option<ProjectInfo>, DbErr>
     where C: ConnectionTrait
     {
-        let project = Entity::find_by_id(project_id)
+        let project_item = Entity::find_by_id(project_id)
             .one(db)
             .await?
-            .map(|m| m.to_project_info());
+            .map(|m| m.to_project_item());
 
-        if project.is_none() {
+        if project_item.is_none() {
             return Ok(None)
         }
 
-        if let Some(mut project) = project {
+        if let Some(project_item) = project_item {
         // 查询项目环境
-            let project_env = project_env_entity::Entity::find_project_info(db, project_id).await?;
-            project.env = project_env;
-            Ok(Some(project))
+            let env = project_env_entity::Entity::find_project_info(db, project_id).await?;
+            Ok(Some(ProjectInfo { project_item, env }))
         } else {
             Ok(None)
         }
+    }
+
+    pub async fn find_project_list_by_group<C>(db: &C, query: ProjectList) -> Result<Vec<ProjectItem>, DbErr>
+    where C: ConnectionTrait
+    {
+        let list: Vec<ProjectItem> = Entity::find()
+            .filter(Column::GroupId.eq(query.group_id))
+            .order_by_desc(Column::Id)
+            .paginate(db, query.page_size())
+            .fetch_page(query.page())
+            .await?
+            .into_iter()
+            .map(|m| m.to_project_item())
+            .collect();
+
+        Ok(list)
     }
 }

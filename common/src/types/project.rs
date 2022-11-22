@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 use validator::{Validate, ValidationError};
+use yapi_macros::PaginatorQuery;
 
-use crate::utils::validator::valid_one_of;
+use crate::{utils::validator::valid_one_of, traits::Paginator};
 
 use super::{NameValue, InterfaceCat};
 
@@ -48,8 +49,15 @@ pub struct ProjectUp {
     pub project_type: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PaginatorQuery)]
+pub struct ProjectList {
+    pub group_id: u32,
+    page: Option<usize>,
+    limit: Option<usize>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ProjectInfo {
+pub struct ProjectItem {
     pub id: u32,
     pub uid: u32,
     pub name: String,
@@ -62,9 +70,16 @@ pub struct ProjectInfo {
     pub icon: String,
     pub is_json5: bool,
     pub is_mock_open: bool,
-    pub env: Vec<ProjectEnv>,
     pub add_time: u32,
     pub up_time: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProjectInfo {
+    #[serde(flatten)]
+    pub project_item: ProjectItem,
+
+    pub env: Vec<ProjectEnv>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

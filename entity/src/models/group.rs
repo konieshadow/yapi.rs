@@ -1,4 +1,4 @@
-use sea_orm::{entity::prelude::*, ConnectionTrait, sea_query::{Query, Expr, Alias, Cond}, JoinType, FromQueryResult, Order, Condition};
+use sea_orm::{entity::prelude::*, ConnectionTrait, sea_query::{Query, Expr, Alias, Cond}, FromQueryResult, Order, Condition};
 use yapi_common::types::GroupInfo;
 use yapi_macros::AutoTimestampModel;
 
@@ -44,9 +44,7 @@ impl Entity {
             .expr_as(Expr::col((Entity, Column::GroupType)), Alias::new("group_type"))
             .column((group_member::Entity, group_member::Column::Role))
             .from(Entity)
-            .join(
-                JoinType::LeftJoin,
-                group_member::Entity,
+            .left_join(group_member::Entity,
                 Expr::tbl(group_member::Entity, group_member::Column::GroupId)
                     .equals(Entity, Column::Id)
             )
@@ -81,9 +79,7 @@ impl Entity {
             .expr_as(Expr::col((Entity, Column::GroupType)), Alias::new("group_type"))
             .column((group_member::Entity, group_member::Column::Role))
             .from(Entity)
-            .join(
-                JoinType::LeftJoin,
-                group_member::Entity,
+            .left_join(group_member::Entity,
                 Expr::tbl(group_member::Entity, group_member::Column::GroupId)
                     .equals(Entity, Column::Id)
             )

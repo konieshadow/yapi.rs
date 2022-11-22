@@ -13,34 +13,14 @@ pub use project::*;
 pub use interface::*;
 pub use role_permission::*;
 
-fn page_default() -> usize {
-    1
-}
-
-fn limit_default() -> usize {
-    20
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Paginator {
-    #[serde(default = "page_default")]
-    page: usize,
-
-    #[serde(default = "limit_default")]
-    limit: usize,
+pub struct List<T> {
+    pub list: Vec<T>,
 }
 
-impl Paginator {
-    pub fn page_size(&self) -> usize {
-        self.limit
-    }
-
-    pub fn page(&self) -> usize {
-        if self.page == 0 {
-            0
-        } else {
-            self.page - 1
-        }
+impl <T> List<T> {
+    pub fn new(list: Vec<T>) -> Self {
+        Self { list }
     }
 }
 

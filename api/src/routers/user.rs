@@ -1,7 +1,7 @@
 use axum::extract::Query;
 use axum::{Extension};
 use axum::{routing::{get, post}, Router};
-use yapi_common::types::{UserReg, AuthUserInfo, UserLogin, UserInfo, PageList, Paginator, Search, UserSearch};
+use yapi_common::types::{UserReg, AuthUserInfo, UserLogin, UserInfo, PageList, Search, UserSearch, UserList};
 use yapi_core::extractors::auth::{AuthUser, MaybeAuthUser};
 use yapi_core::extractors::json::ValidateJson;
 use yapi_core::{Result, res::ResData};
@@ -58,7 +58,7 @@ async fn status(
 async fn list(
     ctx: Extension<Context>,
     _: AuthUser,
-    Query(req): Query<Paginator>,
+    Query(req): Query<UserList>,
 ) -> Result<ResData<PageList<UserInfo>>> {
     let data = user_service::list(&ctx.db, req).await?;
 

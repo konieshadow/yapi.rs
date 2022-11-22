@@ -37,16 +37,6 @@ list[]                  | Array  | 必须     | 列表
 &emsp;project_type      | string | 必须     | public、private
 &emsp;color             | string | 必须     | 图标颜色
 &emsp;icon              | string | 必须     | 图标
-&emsp;env[]             | Array  | 必须     | 环境列表
-&emsp;id                | int    | 必须     | 环境id
-&emsp;&emsp;name        | string | 必须     | 环境名称
-&emsp;&emsp;domain      | string | 必须     | 环境域名
-&emsp;&emsp;header[]    | Array  | 必须     | Header列表
-&emsp;&emsp;&emsp;name  | string | 必须     | 名称
-&emsp;&emsp;&emsp;value | string | 必须     | 值
-&emsp;&emsp;global[]    | Array  | 必须     | 全局变量列表
-&emsp;&emsp;&emsp;name  | string | 必须     | 名称
-&emsp;&emsp;&emsp;value | string | 必须     | 值
 &emsp;add_time          | int    | 必须     | 创建时间戳
 &emsp;up_time           | int    | 必须     | 更新时间戳
 

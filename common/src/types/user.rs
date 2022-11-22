@@ -1,6 +1,9 @@
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
+use yapi_macros::PaginatorQuery;
+
+use crate::traits::Paginator;
 
 lazy_static! {
     static ref RE_PASSWORD: Regex = Regex::new(r"[A-Za-z\d$@$!%*#?&]{8,20}").unwrap();
@@ -37,6 +40,12 @@ pub struct UserSearch {
     pub role: String,
     pub add_time: u32,
     pub up_time: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PaginatorQuery)]
+pub struct UserList {
+    page: Option<usize>,
+    limit: Option<usize>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]

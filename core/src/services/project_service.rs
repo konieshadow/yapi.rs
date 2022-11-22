@@ -1,7 +1,7 @@
 use regex::Regex;
 use sea_orm::{DatabaseConnection, TransactionTrait, EntityTrait, Set, ActiveEnum, QueryFilter, ColumnTrait, ActiveValue::NotSet};
-use yapi_common::types::{ProjectAdd, ProjectInfo, ProjectUp, UpdateResult};
-use yapi_entity::{project_entity, base::{TypeVisible, NameValueVec}, project_env_entity, interface_cat_entity, traits::AutoTimestamp};
+use yapi_common::types::{ProjectAdd, ProjectInfo, ProjectUp, UpdateResult, DeleteResult, ProjectDetail, ProjectList, List, ProjectItem};
+use yapi_entity::{project_entity, base::{TypeVisible, NameValueVec}, project_env_entity, interface_cat_entity, traits::AutoTimestamp, project_member_entity};
 
 use crate::{Result, error::Error};
 
@@ -100,6 +100,64 @@ pub async fn up(db: &DatabaseConnection, uid: u32, project_up: ProjectUp) -> Res
     tx.commit().await?;
 
     Ok(result.into())
+}
+
+pub async fn del(db: &DatabaseConnection, uid: u32, project_id: u32) -> Result<DeleteResult> {
+    let tx = db.begin().await?;
+
+    // 权限校验
+    get_user_project_role(&tx, uid, project_id).await?.check_permission(ActionType::Danger)?;
+
+    // 删除项目
+    let result = project_entity::Entity::delete_many()
+        .filter(project_entity::Column::Id.eq(project_id))
+        .exec(&tx)
+        .await?;
+
+    // 删除项目环境
+    project_env_entity::Entity::delete_many()
+        .filter(project_env_entity::Column::ProjectId.eq(project_id))
+        .exec(&tx)
+        .await?;
+
+    // 删除项目成员
+    project_member_entity::Entity::delete_many()
+        .filter(project_member_entity::Column::ProjectId.eq(project_id))
+        .exec(&tx)
+        .await?;
+
+    // 删除项目下的接口分类
+    // TODO
+
+    // 删除项目下的所有接口
+    // TODO
+
+    tx.commit().await?;
+
+    Ok(result.into())
+}
+
+pub async fn get(db: &DatabaseConnection, uid: u32, project_id: u32) -> Result<ProjectDetail> {
+    // 权限校验
+    get_user_project_role(db, uid, project_id).await?.check_permission(ActionType::View)?;
+
+    // 查询项目基本信息
+    let project_info = project_entity::Entity::find_project_info(db, project_id).await?
+        .ok_or_else(|| Error::Custom(401, String::from("项目不存在")))?;
+
+    // 查询项目接口分类
+    let cat = interface_cat_entity::Entity::find_interface_cat_by_project(db, project_id).await?;
+
+    Ok(ProjectDetail { project_info, cat })
+}
+
+pub async fn list(db: &DatabaseConnection, uid: u32, query: ProjectList) -> Result<List<ProjectItem>> {
+    // 权限校验
+    get_user_group_role(db, uid, query.group_id).await?.check_permission(ActionType::View)?;
+
+    let list = project_entity::Entity::find_project_list_by_group(db, query).await?;
+
+    Ok(List::new(list))
 }
 
 fn handle_basepath(basepath: &str) -> Result<String> {

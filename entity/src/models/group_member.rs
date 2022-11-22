@@ -1,4 +1,4 @@
-use sea_orm::{entity::prelude::*, ConnectionTrait, sea_query::{Query, Expr}, JoinType, FromQueryResult};
+use sea_orm::{entity::prelude::*, ConnectionTrait, sea_query::{Query, Expr}, FromQueryResult};
 use yapi_common::types::MemberInfo;
 
 use crate::models::base::MemberRole;
@@ -36,9 +36,7 @@ impl Entity {
                 (user::Entity, user::Column::Email),
             ])
             .from(Entity)
-            .join(
-                JoinType::InnerJoin,
-                user::Entity,
+            .inner_join(user::Entity,
                 Expr::tbl(user::Entity, user::Column::Id)
                     .equals(Entity, Column::Uid),
             )
@@ -67,9 +65,7 @@ impl Entity {
                 (user::Entity, user::Column::Email),
             ])
             .from(Entity)
-            .join(
-                JoinType::InnerJoin,
-                user::Entity,
+            .inner_join(user::Entity,
                 Expr::tbl(user::Entity, user::Column::Id)
                     .equals(Entity, Column::Uid),
             )

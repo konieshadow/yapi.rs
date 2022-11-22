@@ -1,4 +1,5 @@
-use sea_orm::entity::prelude::*;
+use sea_orm::{entity::prelude::*, ConnectionTrait};
+use yapi_common::types::InterfaceCat;
 use yapi_macros::AutoTimestampModel;
 
 use crate::traits::AutoTimestamp;
@@ -26,3 +27,33 @@ pub struct Model {
 pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl Model {
+    pub fn to_interface_cat(self) -> InterfaceCat {
+        InterfaceCat {
+            id: self.id,
+            uid: self.uid,
+            name: self.name,
+            project_id: self.project_id,
+            desc: self.desc,
+            add_time: self.add_time,
+            up_time: self.up_time,
+        }
+    }
+}
+
+impl Entity {
+    pub async fn find_interface_cat_by_project<C>(db: &C, project_id: u32) -> Result<Vec<InterfaceCat>, DbErr>
+    where C: ConnectionTrait
+    {
+        let list: Vec<InterfaceCat> = Entity::find()
+            .filter(Column::ProjectId.eq(project_id))
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|m| m.to_interface_cat())
+            .collect();
+
+        Ok(list)
+    }
+}

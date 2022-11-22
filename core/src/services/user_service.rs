@@ -4,7 +4,8 @@ use sea_orm::{
     ColumnTrait, Condition, DatabaseConnection, EntityTrait, FromQueryResult, ItemsAndPagesNumber,
     PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, Set, TransactionTrait,
 };
-use yapi_common::types::{PageList, Paginator, UserInfo, UserLogin, UserReg, UserSearch};
+use yapi_common::traits::Paginator;
+use yapi_common::types::{PageList, UserInfo, UserLogin, UserReg, UserSearch, UserList};
 use yapi_entity::base::{TypeVisible};
 use yapi_entity::traits::AutoTimestamp;
 use yapi_entity::{group_entity};
@@ -108,20 +109,20 @@ pub async fn status(db: &DatabaseConnection, user_id: Option<u32>) -> Result<Use
     Ok(user_info)
 }
 
-pub async fn list(db: &DatabaseConnection, paginator: Paginator) -> Result<PageList<UserInfo>> {
+pub async fn list(db: &DatabaseConnection, query: UserList) -> Result<PageList<UserInfo>> {
     let ItemsAndPagesNumber {
         number_of_items: count,
         number_of_pages: total,
     } = user_entity::Entity::find()
         .order_by_desc(user_entity::Column::Id)
-        .paginate(db, paginator.page_size())
+        .paginate(db, query.page_size())
         .num_items_and_pages()
         .await?;
 
     let list: Vec<UserInfo> = user_entity::Entity::find()
         .order_by_desc(user_entity::Column::Id)
-        .paginate(db, paginator.page_size())
-        .fetch_page(paginator.page())
+        .paginate(db, query.page_size())
+        .fetch_page(query.page())
         .await?
         .into_iter().map(|m| m.to_user_info())
         .collect();
