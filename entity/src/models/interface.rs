@@ -126,7 +126,8 @@ pub struct Model {
 
     #[sea_orm(indexed)]
     pub project_id: u32,
-    
+
+    pub cat_id: u32,
     pub title: String,
     pub method: String,
     pub path: String,

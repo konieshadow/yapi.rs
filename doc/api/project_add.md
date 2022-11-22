@@ -50,8 +50,8 @@ env[]             | Array  | 必须     | 环境列表
 &emsp;global[]    | Array  | 必须     | 全局变量列表
 &emsp;&emsp;name  | string | 必须     | 名称
 &emsp;&emsp;value | string | 必须     | 值
-&emsp;add_time    | int    | 必须     | 创建时间戳
-&emsp;up_time     | int    | 必须     | 更新时间戳
+add_time          | int    | 必须     | 创建时间戳
+up_time           | int    | 必须     | 更新时间戳
 
 ### 响应码说明
 

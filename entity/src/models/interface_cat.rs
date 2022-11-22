@@ -1,4 +1,4 @@
-use sea_orm::{entity::prelude::*, ConnectionTrait};
+use sea_orm::{entity::prelude::*, ConnectionTrait, sea_query::{Query, Expr, Alias}, FromQueryResult};
 use yapi_common::types::InterfaceCat;
 use yapi_macros::AutoTimestampModel;
 
@@ -11,6 +11,8 @@ pub struct Model {
     pub id: u32,
 
     pub uid: u32,
+
+    pub index: u32,
 
     pub name: String,
 
@@ -33,6 +35,7 @@ impl Model {
         InterfaceCat {
             id: self.id,
             uid: self.uid,
+            index: self.index,
             name: self.name,
             project_id: self.project_id,
             desc: self.desc,
@@ -55,5 +58,41 @@ impl Entity {
             .collect();
 
         Ok(list)
+    }
+
+    pub async fn find_max_interface_cat_index<C>(db: &C, project_id: u32) -> Result<u32, DbErr>
+    where C: ConnectionTrait
+    {
+        #[derive(FromQueryResult)]
+        struct Result {
+            index: u32,
+        }
+
+        let mut stmt = Query::select();
+        stmt.expr_as(Expr::col(Column::Index).max(), Alias::new("index"))
+            .from(Entity)
+            .and_where(Column::ProjectId.eq(project_id));
+
+        let builder = db.get_database_backend();
+        let result = Result::find_by_statement(builder.build(&stmt))
+            .one(db)
+            .await?;
+
+        Ok(result.map(|m| m.index).unwrap_or(0))
+    }
+
+    pub async fn update_interface_cat_index_after<C>(db: &C, project_id: u32, cat_index: u32) -> Result<(), DbErr>
+    where C: ConnectionTrait
+    {
+        Entity::update_many()
+            .filter(
+                Column::ProjectId.eq(project_id)
+                    .and(Column::Index.gt(cat_index))
+            )
+            .col_expr(Column::Index, Expr::col(Column::Index).sub(1))
+            .exec(db)
+            .await?;
+
+        Ok(())
     }
 }

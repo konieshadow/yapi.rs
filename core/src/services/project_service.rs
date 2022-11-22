@@ -51,6 +51,7 @@ pub async fn add(db: &DatabaseConnection, uid: u32, project_add: ProjectAdd) -> 
     let interface_cat = interface_cat_entity::ActiveModel {
         uid: Set(uid),
         project_id: Set(project_id),
+        index: Set(1),
         name: Set(String::from("Default")),
         desc: Set(String::new()),
         ..AutoTimestamp::default_add()
