@@ -2,7 +2,7 @@ use sea_orm::{entity::prelude::*, ConnectionTrait, sea_query::{Query, Expr, Alia
 use yapi_common::types::GroupInfo;
 use yapi_macros::AutoTimestampModel;
 
-use super::{base::TypeVisible, group_member};
+use super::{base::TypeVisible, group_member_entity};
 use crate::traits::AutoTimestamp;
 
 #[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel, AutoTimestampModel)]
@@ -42,16 +42,16 @@ impl Entity {
                 (Entity, Column::UpTime),
             ])
             .expr_as(Expr::col((Entity, Column::GroupType)), Alias::new("group_type"))
-            .column((group_member::Entity, group_member::Column::Role))
+            .column((group_member_entity::Entity, group_member_entity::Column::Role))
             .from(Entity)
-            .left_join(group_member::Entity,
-                Expr::tbl(group_member::Entity, group_member::Column::GroupId)
+            .left_join(group_member_entity::Entity,
+                Expr::tbl(group_member_entity::Entity, group_member_entity::Column::GroupId)
                     .equals(Entity, Column::Id)
             )
             .and_where(Column::Id.eq(group_id))
             .cond_where(
                 Cond::any()
-                    .add(group_member::Column::Uid.eq(uid))
+                    .add(group_member_entity::Column::Uid.eq(uid))
                     .add(
                         Cond::all()
                             .add(Column::Uid.eq(uid))
@@ -77,13 +77,13 @@ impl Entity {
                 (Entity, Column::UpTime),
             ])
             .expr_as(Expr::col((Entity, Column::GroupType)), Alias::new("group_type"))
-            .column((group_member::Entity, group_member::Column::Role))
+            .column((group_member_entity::Entity, group_member_entity::Column::Role))
             .from(Entity)
-            .left_join(group_member::Entity,
-                Expr::tbl(group_member::Entity, group_member::Column::GroupId)
+            .left_join(group_member_entity::Entity,
+                Expr::tbl(group_member_entity::Entity, group_member_entity::Column::GroupId)
                     .equals(Entity, Column::Id)
             )
-            .and_where(group_member::Column::Uid.eq(uid))
+            .and_where(group_member_entity::Column::Uid.eq(uid))
             .order_by((Entity, Column::Id), Order::Desc);
 
         let builder = db.get_database_backend();

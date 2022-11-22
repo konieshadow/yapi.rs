@@ -14,7 +14,7 @@ pub fn router() -> Router {
         .route("/group/del", post(del))
         .route("/group/get", get(get_group))
         .route("/group/list", get(list_group))
-        .route("/group/get_member_list", get(get_memeber_list))
+        .route("/group/get_member_list", get(get_member_list))
         .route("/group/add_member", post(add_member))
         .route("/group/del_member", post(delete_member))
         .route("/group/change_member_role", post(change_member_role))
@@ -69,12 +69,12 @@ async fn list_group(
     Ok(ResData::success(data))
 }
 
-async fn get_memeber_list(
+async fn get_member_list(
     ctx: Extension<Context>,
     auth_user: AuthUser,
     Query(req): Query<GetById>,
 ) -> Result<ResData<Vec<MemberInfo>>> {
-    let data = group_service::get_memeber_list(&ctx.db, auth_user.id, req.id).await?;
+    let data = group_service::get_member_list(&ctx.db, auth_user.id, req.id).await?;
 
     Ok(ResData::success(data))
 }
@@ -94,7 +94,7 @@ async fn delete_member(
     auth_user: AuthUser,
     ValidateJson(req): ValidateJson<DeleteMember>,
 ) -> Result<ResData<DeleteResult>> {
-    let data = group_service::del_member(&ctx.db, auth_user.id, req).await?;
+    let data = group_service::delete_member(&ctx.db, auth_user.id, req).await?;
 
     Ok(ResData::success(data))
 }

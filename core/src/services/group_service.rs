@@ -177,7 +177,7 @@ pub async fn list(db: &DatabaseConnection, uid: u32) -> Result<Vec<GroupInfo>> {
     Ok(group_list)
 }
 
-pub async fn get_memeber_list(db: &DatabaseConnection, uid: u32, group_id: u32) -> Result<Vec<MemberInfo>> {
+pub async fn get_member_list(db: &DatabaseConnection, uid: u32, group_id: u32) -> Result<Vec<MemberInfo>> {
     // 校验权限
     get_user_group_role(db, uid, group_id).await?
         .check_permission(ActionType::View)?;
@@ -233,7 +233,7 @@ pub async fn add_member(db: &DatabaseConnection, uid: u32, add_member: AddMember
     })
 }
 
-pub async fn del_member(db: &DatabaseConnection, uid: u32, delete_member: DeleteMember) -> Result<DeleteResult> {
+pub async fn delete_member(db: &DatabaseConnection, uid: u32, delete_member: DeleteMember) -> Result<DeleteResult> {
     let tx = db.begin().await?;
 
     // 校验权限
@@ -265,7 +265,7 @@ pub async fn change_member_role(db: &DatabaseConnection, uid: u32, change_member
     let result = group_member_entity::Entity::update_many()
         .filter(
             group_member_entity::Column::GroupId.eq(change_member_role.id)
-                .and(group_member_entity::Column::Uid.eq(change_member_role.id))
+                .and(group_member_entity::Column::Uid.eq(change_member_role.member_uid))
         )
         .col_expr(group_member_entity::Column::Role, Expr::value(member_role))
         .exec(&tx)

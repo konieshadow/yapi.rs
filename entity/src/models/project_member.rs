@@ -1,6 +1,9 @@
-use sea_orm::entity::prelude::*;
+use sea_orm::{entity::prelude::*, sea_query::{Query, Expr}, ConnectionTrait, FromQueryResult};
+use yapi_common::types::MemberInfo;
 
-use super::base::MemberRole;
+use crate::user_entity;
+
+use super::{base::MemberRole, user};
 
 #[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "project_member")]
@@ -19,3 +22,60 @@ pub struct Model {
 pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl Entity {
+    pub async fn find_member_by_project<C>(db: &C, project_id: u32) -> Result<Vec<MemberInfo>, DbErr>
+    where C: ConnectionTrait
+    {
+        let mut stmt = Query::select();
+        stmt.columns([
+                (Entity, Column::Role),
+            ])
+            .columns([
+                (user::Entity, user::Column::Id),
+                (user::Entity, user::Column::Username),
+                (user::Entity, user::Column::Email),
+            ])
+            .from(Entity)
+            .inner_join(user::Entity,
+                Expr::tbl(user::Entity, user::Column::Id)
+                    .equals(Entity, Column::Uid),
+            )
+            .and_where(Column::ProjectId.eq(project_id));
+
+        let builder = db.get_database_backend();
+        MemberInfo::find_by_statement(builder.build(&stmt))
+            .all(db)
+            .await
+    }
+
+    pub async fn find_member_by_project_and_uids<C>(db: &C, project_id: u32, uids: &[u32]) -> Result<Vec<MemberInfo>, DbErr>
+    where C: ConnectionTrait
+    {
+        if uids.is_empty() {
+            return Ok(Vec::new())
+        }
+
+        let mut stmt = Query::select();
+        stmt.columns([
+                (Entity, Column::Role),
+            ])
+            .columns([
+                (user_entity::Entity, user_entity::Column::Id),
+                (user_entity::Entity, user_entity::Column::Username),
+                (user_entity::Entity, user_entity::Column::Email),
+            ])
+            .from(Entity)
+            .inner_join(user_entity::Entity,
+                Expr::tbl(user_entity::Entity, user_entity::Column::Id)
+                    .equals(Entity, Column::Uid),
+            )
+            .and_where(Column::ProjectId.eq(project_id))
+            .and_where(Column::Uid.is_in(uids.to_owned()));
+
+        let builder = db.get_database_backend();
+        MemberInfo::find_by_statement(builder.build(&stmt))
+            .all(db)
+            .await
+    }
+}

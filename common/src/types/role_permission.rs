@@ -37,7 +37,6 @@ pub struct AddMember {
 #[derive(Debug, Clone, Serialize, Deserialize, Validate)]
 pub struct DeleteMember {
     pub id: u32,
-
     pub member_uid: u32,
 }
 

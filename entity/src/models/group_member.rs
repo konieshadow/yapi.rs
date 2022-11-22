@@ -3,7 +3,7 @@ use yapi_common::types::MemberInfo;
 
 use crate::models::base::MemberRole;
 
-use super::user;
+use super::user_entity;
 
 #[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
 #[sea_orm(table_name = "group_member")]
@@ -31,13 +31,13 @@ impl Entity {
                 (Entity, Column::Role),
             ])
             .columns([
-                (user::Entity, user::Column::Id),
-                (user::Entity, user::Column::Username),
-                (user::Entity, user::Column::Email),
+                (user_entity::Entity, user_entity::Column::Id),
+                (user_entity::Entity, user_entity::Column::Username),
+                (user_entity::Entity, user_entity::Column::Email),
             ])
             .from(Entity)
-            .inner_join(user::Entity,
-                Expr::tbl(user::Entity, user::Column::Id)
+            .inner_join(user_entity::Entity,
+                Expr::tbl(user_entity::Entity, user_entity::Column::Id)
                     .equals(Entity, Column::Uid),
             )
             .and_where(Column::GroupId.eq(group_id));
@@ -60,13 +60,13 @@ impl Entity {
                 (Entity, Column::Role),
             ])
             .columns([
-                (user::Entity, user::Column::Id),
-                (user::Entity, user::Column::Username),
-                (user::Entity, user::Column::Email),
+                (user_entity::Entity, user_entity::Column::Id),
+                (user_entity::Entity, user_entity::Column::Username),
+                (user_entity::Entity, user_entity::Column::Email),
             ])
             .from(Entity)
-            .inner_join(user::Entity,
-                Expr::tbl(user::Entity, user::Column::Id)
+            .inner_join(user_entity::Entity,
+                Expr::tbl(user_entity::Entity, user_entity::Column::Id)
                     .equals(Entity, Column::Uid),
             )
             .and_where(Column::GroupId.eq(group_id))
