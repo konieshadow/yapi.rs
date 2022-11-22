@@ -34,3 +34,9 @@ pub struct UpInterfaceCat {
     #[validate(length(max = 200, message = "长度不能大于200"))]
     pub desc: Option<String>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct IndexItem {
+    pub id: u32,
+    pub index: u32,
+}

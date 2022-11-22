@@ -12,14 +12,14 @@ pub struct Model {
 
     pub uid: u32,
 
+    #[sea_orm(indexed)]
+    pub project_id: u32,
+
     pub index: u32,
 
     pub name: String,
 
     pub desc: String,
-
-    #[sea_orm(indexed)]
-    pub project_id: u32,
 
     pub add_time: u32,
     pub up_time: u32,
@@ -94,5 +94,30 @@ impl Entity {
             .await?;
 
         Ok(())
+    }
+
+    pub async fn find_project_ids_by_interface_cat_ids<C>(db: &C, cat_ids: &[u32]) -> Result<Vec<u32>, DbErr>
+    where C: ConnectionTrait
+    {
+        #[derive(FromQueryResult)]
+        struct Result {
+            project_id: u32,
+        }
+
+        let mut stmt = Query::select();
+        stmt.column(Column::ProjectId)
+            .distinct()
+            .from(Entity)
+            .and_where(Column::Id.is_in(cat_ids.to_owned()));
+
+        let builder = db.get_database_backend();
+        let list = Result::find_by_statement(builder.build(&stmt))
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|m| m.project_id)
+            .collect();
+
+        Ok(list)
     }
 }
