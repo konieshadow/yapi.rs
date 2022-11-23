@@ -1,6 +1,6 @@
-use sea_orm::entity::prelude::*;
+use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Alias, Expr}};
 use serde::{Serialize, Deserialize};
-use yapi_common::types::NameValue;
+use yapi_common::types::{ReqBodyForm, ReqQuery, ReqHeader, InterfaceInfo};
 use yapi_macros::AutoTimestampModel;
 
 use crate::traits::AutoTimestamp;
@@ -36,16 +36,6 @@ pub enum ReqBodyType {
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumIter, Serialize, Deserialize, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
-pub enum FormType {
-    #[sea_orm(string_value = "text")]
-    Text,
-
-    #[sea_orm(string_value = "file")]
-    File,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, EnumIter, Serialize, Deserialize, DeriveActiveEnum)]
-#[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
 pub enum ResBodyType {
     #[sea_orm(string_value = "json")]
     Json,
@@ -64,31 +54,7 @@ pub enum ResBodyType {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
-pub struct QueryPath {
-    pub path: String,
-    pub params: Vec<NameValue>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
-pub struct ReqQuery {
-    pub name: String,
-    pub value: String,
-    pub example: String,
-    pub desc: String,
-    pub required: bool,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct ReqQuerys(Vec<ReqQuery>);
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
-pub struct ReqHeader {
-    pub name: String,
-    pub value: String,
-    pub example: String,
-    pub desc: String,
-    pub required: bool,
-}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct ReqHeaders(Vec<ReqHeader>);
@@ -102,16 +68,6 @@ pub struct ReqParam {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct ReqParams(Vec<ReqParam>);
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
-pub struct ReqBodyForm {
-    pub name: String,
-    pub form_type: FormType,
-    pub example: String,
-    pub value: String,
-    pub desc: String,
-    required: bool,
-}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct ReqBodyForms(Vec<ReqBodyForm>);
@@ -128,24 +84,44 @@ pub struct Model {
     pub project_id: u32,
 
     pub cat_id: u32,
+    pub index: u32,
     pub title: String,
     pub method: String,
     pub path: String,
+
+    #[sea_orm(default_value = "undone")]
     pub status: InterfaceStatus,
+
+    #[sea_orm(default_value = "")]
     pub desc: String,
+    #[sea_orm(default_value = "")]
     pub markdown: String,
-    pub query_path: QueryPath,
+
+    #[sea_orm(default_value = "[]")]
     pub req_query: ReqQuerys,
+
+    #[sea_orm(default_value = "[]")]
     pub req_headers: ReqHeaders,
+
+    #[sea_orm(default_value = "[]")]
     pub req_params: ReqParams,
+
+    #[sea_orm(default_value = "form")]
     pub req_body_type: ReqBodyType,
 
     #[sea_orm(default_value = false)]
     pub req_body_is_json_schema: bool,
 
+    #[sea_orm(default_value = "[]")]
     pub req_body_form: ReqBodyForms,
+
+    #[sea_orm(default_value = "")]
     pub req_body_other: String,
+
+    #[sea_orm(default_value = "json")]
     pub res_body_type: ResBodyType,
+
+    #[sea_orm(default_value = "")]
     pub res_body: String,
 
     #[sea_orm(default_value = true)]
@@ -162,3 +138,56 @@ pub struct Model {
 pub enum Relation {}
 
 impl ActiveModelBehavior for ActiveModel {}
+
+impl Model {
+    pub fn to_interface_info(self) -> InterfaceInfo {
+        InterfaceInfo {
+            id: self.id,
+            uid: self.uid,
+            cat_id: self.cat_id,
+            project_id: self.project_id,
+            title: self.title,
+            method: self.method,
+            path: self.path,
+            status: self.status.into_value(),
+            api_opened: self.api_opened,
+            desc: self.desc,
+            markdown: self.markdown,
+            req_header: self.req_headers.0,
+            req_query: self.req_query.0,
+            req_body_type: self.req_body_type.into_value(),
+            req_body_is_json_schema: self.req_body_is_json_schema,
+            req_body_form: self.req_body_form.0,
+            req_body_other: self.req_body_other,
+            res_body_type: self.res_body_type.into_value(),
+            res_body_is_json_schema: self.res_body_is_json_schema,
+            res_body: self.res_body,
+            add_time: self.add_time,
+            up_time: self.up_time,
+        }
+    }
+}
+
+impl Entity {
+    pub async fn find_max_interface_index<C>(db: &C, project_id: u32, cat_id: u32) -> Result<u32, DbErr>
+    where C: ConnectionTrait
+    {
+        #[derive(FromQueryResult)]
+        struct Result {
+            index: Option<u32>,
+        }
+
+        let mut stmt = Query::select();
+        stmt.expr_as(Expr::col(Column::Index).max(), Alias::new("index"))
+            .from(Entity)
+            .and_where(Column::ProjectId.eq(project_id))
+            .and_where(Column::CatId.eq(cat_id));
+
+        let builder = db.get_database_backend();
+        let result = Result::find_by_statement(builder.build(&stmt))
+            .one(db)
+            .await?;
+
+        Ok(result.and_then(|m| m.index).unwrap_or(0))
+    }
+}

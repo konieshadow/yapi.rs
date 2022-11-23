@@ -32,8 +32,7 @@ project_id | int  | 必须     | 项目id
 &emsp;list[]           | Array  | 必须     | 接口列表
 &emsp;&emsp;id         | int    | 必须     | 接口id
 &emsp;&emsp;uid        | int    | 必须     | 创建者id
-&emsp;&emsp;edit_uid   | int    | 必须     | 编辑者id
-&emsp;&emsp;catid      | int    | 必须     | 分类id
+&emsp;&emsp;cat_id     | int    | 必须     | 分类id
 &emsp;&emsp;project_id | int    | 必须     | 项目id
 &emsp;&emsp;title      | string | 必须     | 接口名称
 &emsp;&emsp;method     | string | 必须     | 请求方法

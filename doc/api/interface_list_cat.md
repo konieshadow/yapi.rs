@@ -16,7 +16,7 @@ Authorization | string | 必须     | Token xxxxxx
 
 参数名称 | 类型 | 出现要求 | 描述
 :--------|:-----|:-------|:----
-catid    | int  | 必须     | 分类id
+id       | int  | 必须     | 分类id
 page     | int  | 非必须   | 当前页数
 limit    | int  | 非必须   | 每页数量
 
@@ -29,10 +29,9 @@ limit    | int  | 非必须   | 每页数量
 count            | int    | 必须     | 总数量
 total            | int    | 必须     | 总页数
 list[]           | Array  | 必须     | 列表
-&emsp;id        | int    | 必须     | 接口id
+&emsp;id         | int    | 必须     | 接口id
 &emsp;uid        | int    | 必须     | 创建者id
-&emsp;edit_uid   | int    | 必须     | 编辑者id
-&emsp;catid      | int    | 必须     | 分类id
+&emsp;cat_id     | int    | 必须     | 分类id
 &emsp;project_id | int    | 必须     | 项目id
 &emsp;title      | string | 必须     | 接口名称
 &emsp;method     | string | 必须     | 请求方法
@@ -45,6 +44,6 @@ list[]           | Array  | 必须     | 列表
 ### 响应码说明
 
 响应码 | 说明
-:------|:---------
+:------|:----
 40011  | 未登录
 405    | 没有权限

@@ -1,22 +1,26 @@
 ### 接口名称
-获取接口
+更新接口
 
 ### 接口路径
-GET /api/interface/get
+POST /api/interface/add
 
 ### 请求参数
 
 #### 请求头
 
 参数名称      | 类型   | 出现要求 | 描述
-:-------------|:-------|:-------|:------------
+:-------------|:-------|:-------|:----------------
 Authorization | string | 必须     | Token xxxxxx
+Content-Type  | string | 非必须   | application/json
 
-#### 查询参数
+#### 请求体
 
-参数名称 | 类型 | 出现要求 | 描述
-:--------|:-----|:-------|:----
-id       | int  | 必须     | 接口id
+参数名称   | 类型   | 出现要求 | 描述
+:----------|:-------|:-------|:----
+cat_id     | int    | 必须     | 分类id
+title      | string | 必须     | 接口名称
+method     | string | 必须     | 请求方法
+path       | string | 必须     | 请求路径
 
 ### 响应参数
 
@@ -37,7 +41,6 @@ type                    | string | 必须     | 类型 static, var
 desc                    | string | 必须     | 描述html
 markdown                | string | 必须     | 描述markdown
 req_header[]            | Array  | 必须     | 请求头列表
-&emsp;id                | int    | 必须     | 请求头id
 &emsp;name              | string | 必须     | 请求头名称
 &emsp;value             | string | 必须     | 请求头值
 &emsp;required          | string | 必须     | 是否必须 0, 1
@@ -67,5 +70,7 @@ up_time                 | int    | 必须     | 更新时间戳
 ### 响应码说明
 
 响应码 | 说明
-:------|:---
+:------|:-----
 40011  | 未登录
+401    | 分类不存在
+405    | 没有权限

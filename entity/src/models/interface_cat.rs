@@ -65,7 +65,7 @@ impl Entity {
     {
         #[derive(FromQueryResult)]
         struct Result {
-            index: u32,
+            index: Option<u32>,
         }
 
         let mut stmt = Query::select();
@@ -78,7 +78,7 @@ impl Entity {
             .one(db)
             .await?;
 
-        Ok(result.map(|m| m.index).unwrap_or(0))
+        Ok(result.and_then(|m| m.index).unwrap_or(0))
     }
 
     pub async fn update_interface_cat_index_after<C>(db: &C, project_id: u32, cat_index: u32) -> Result<(), DbErr>
