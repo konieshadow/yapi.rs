@@ -18,8 +18,8 @@ Content-Type  | string | 非必须   | application/json
 参数名称                | 类型   | 出现要求 | 描述
 :-----------------------|:-------|:-------|:---------------------------------------
 id                      | int    | 必须     | 接口id
-title                   | string | 非必须   | 接口名称
 cat_id                  | int    | 非必须   | 分类id
+title                   | string | 非必须   | 接口名称
 method                  | string | 非必须   | 请求方法
 path                    | string | 非必须   | 请求路径
 tag                     | Array  | 非必须   | 标签列表
@@ -27,6 +27,10 @@ tag                     | Array  | 非必须   | 标签列表
 status                  | string | 非必须   | 完成状态 undone, done
 desc                    | string | 非必须   | 描述html
 markdown                | string | 非必须   | 描述markdown
+req_params[]            | Array  | 非必须   | 请求路径参数
+&emsp;name              | string | 必须     | 请求头名称
+&emsp;example           | string | 必须     | 示例
+&emsp;desc              | string | 必须     | 描述
 req_header[]            | Array  | 必须     | 请求头列表
 &emsp;id                | int    | 必须     | 请求头id
 &emsp;name              | string | 必须     | 请求头名称
@@ -52,6 +56,7 @@ req_body_other          | string | 非必须   | 其他请求体
 res_body_type           | string | 非必须   | 响应体类型 json, text, xml, raw, json-schema
 res_body_is_json_schema | bool   | 非必须   | 响应体是否是json_schema
 res_body                | string | 非必须   | 响应体
+api_opened              | bool   | 非必须   | 是否是开放接口
 
 ### 响应参数
 
@@ -63,6 +68,7 @@ modified_count | int  | 必须     | 更新条目数
 ### 响应码说明
 
 响应码 | 说明
-:------|:------------
+:------|:-----------
 40011  | 未登录
-405    | 不存在的接口, 没有权限
+401    | 接口不存在，分类不存在
+405    | 没有权限

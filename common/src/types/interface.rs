@@ -4,6 +4,14 @@ use validator::{Validate, ValidationError};
 
 use crate::utils::validator::valid_one_of;
 
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
+pub struct ReqParam {
+    pub name: String,
+    pub example: String,
+    pub desc: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct ReqQuery {
     pub name: String,
@@ -133,7 +141,8 @@ pub struct InterfaceUp {
 
     pub desc: Option<String>,
     pub markdown: Option<String>,
-    pub req_header: Option<Vec<ReqHeader>>,
+    pub req_params: Option<Vec<ReqParam>>,
+    pub req_headers: Option<Vec<ReqHeader>>,
     pub req_query: Option<Vec<ReqQuery>>,
 
     #[validate(custom = "valid_req_body_type_fn")]
@@ -142,7 +151,7 @@ pub struct InterfaceUp {
     pub req_body_is_json_schema: Option<bool>,
 
     #[validate]
-    pub req_body_form: Option<ReqBodyForm>,
+    pub req_body_form: Option<Vec<ReqBodyForm>>,
 
     pub req_body_other: Option<String>,
 
@@ -151,6 +160,7 @@ pub struct InterfaceUp {
 
     pub res_body_is_json_schema: Option<bool>,
     pub res_body: Option<String>,
+    pub api_opened: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -166,6 +176,7 @@ pub struct InterfaceInfo {
     pub api_opened: bool,
     pub desc: String,
     pub markdown: String,
+    pub req_params: Vec<ReqParam>,
     pub req_header: Vec<ReqHeader>,
     pub req_query: Vec<ReqQuery>,
     pub req_body_type: String,

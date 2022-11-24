@@ -1,6 +1,6 @@
-use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Alias, Expr}};
+use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Alias, Expr}, QuerySelect};
 use serde::{Serialize, Deserialize};
-use yapi_common::types::{ReqBodyForm, ReqQuery, ReqHeader, InterfaceInfo};
+use yapi_common::types::{ReqBodyForm, ReqQuery, ReqHeader, InterfaceInfo, ReqParam};
 use yapi_macros::AutoTimestampModel;
 
 use crate::traits::AutoTimestamp;
@@ -54,23 +54,16 @@ pub enum ResBodyType {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
-pub struct ReqQuerys(Vec<ReqQuery>);
+pub struct ReqQuerys(pub Vec<ReqQuery>);
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
-pub struct ReqHeaders(Vec<ReqHeader>);
+pub struct ReqHeaders(pub Vec<ReqHeader>);
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
-pub struct ReqParam {
-    pub name: String,
-    pub example: String,
-    pub desc: String,
-}
+pub struct ReqParams(pub Vec<ReqParam>);
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
-pub struct ReqParams(Vec<ReqParam>);
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
-pub struct ReqBodyForms(Vec<ReqBodyForm>);
+pub struct ReqBodyForms(pub Vec<ReqBodyForm>);
 
 #[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel, AutoTimestampModel)]
 #[sea_orm(table_name = "interface")]
@@ -98,13 +91,13 @@ pub struct Model {
     pub markdown: String,
 
     #[sea_orm(default_value = "[]")]
+    pub req_params: ReqParams,
+
+    #[sea_orm(default_value = "[]")]
     pub req_query: ReqQuerys,
 
     #[sea_orm(default_value = "[]")]
     pub req_headers: ReqHeaders,
-
-    #[sea_orm(default_value = "[]")]
-    pub req_params: ReqParams,
 
     #[sea_orm(default_value = "form")]
     pub req_body_type: ReqBodyType,
@@ -121,11 +114,11 @@ pub struct Model {
     #[sea_orm(default_value = "json")]
     pub res_body_type: ResBodyType,
 
-    #[sea_orm(default_value = "")]
-    pub res_body: String,
-
     #[sea_orm(default_value = true)]
     pub res_body_is_json_schema: bool,
+
+    #[sea_orm(default_value = "")]
+    pub res_body: String,
 
     #[sea_orm(default_value = true)]
     pub api_opened: bool,
@@ -153,6 +146,7 @@ impl Model {
             api_opened: self.api_opened,
             desc: self.desc,
             markdown: self.markdown,
+            req_params: self.req_params.0,
             req_header: self.req_headers.0,
             req_query: self.req_query.0,
             req_body_type: self.req_body_type.into_value(),
@@ -166,6 +160,14 @@ impl Model {
             up_time: self.up_time,
         }
     }
+}
+
+#[derive(Debug, Clone, FromQueryResult)]
+pub struct InterfaceBaseInfo {
+    pub id: u32,
+    pub uid: u32,
+    pub project_id: u32,
+    pub cat_id: u32,
 }
 
 impl Entity {
@@ -189,5 +191,19 @@ impl Entity {
             .await?;
 
         Ok(result.and_then(|m| m.index).unwrap_or(0))
+    }
+
+    pub async fn find_interface_base_info<C>(db: &C, interface_id: u32) -> Result<Option<InterfaceBaseInfo>, DbErr>
+    where C: ConnectionTrait
+    {
+        Entity::find_by_id(interface_id)
+            .select_only()
+            .column(Column::Id)
+            .column(Column::Uid)
+            .column(Column::ProjectId)
+            .column(Column::CatId)
+            .into_model::<InterfaceBaseInfo>()
+            .one(db)
+            .await
     }
 }

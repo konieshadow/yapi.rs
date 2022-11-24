@@ -40,6 +40,10 @@ api_opened              | bool   | 必须     | 是否是开放接口
 type                    | string | 必须     | 类型 static, var
 desc                    | string | 必须     | 描述html
 markdown                | string | 必须     | 描述markdown
+req_params[]            | Array  | 必须     | 请求路径参数
+&emsp;name              | string | 必须     | 请求头名称
+&emsp;example           | string | 必须     | 示例
+&emsp;desc              | string | 必须     | 描述
 req_header[]            | Array  | 必须     | 请求头列表
 &emsp;name              | string | 必须     | 请求头名称
 &emsp;value             | string | 必须     | 请求头值
