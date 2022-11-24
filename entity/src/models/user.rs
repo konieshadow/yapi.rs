@@ -137,7 +137,7 @@ impl Entity {
         Ok(result)
     }
 
-    pub async fn find_user_list<C>(db: &C, query: UserList) -> Result<PageList<UserInfo>, DbErr>
+    pub async fn find_user_list_page<C>(db: &C, query: UserList) -> Result<PageList<UserInfo>, DbErr>
     where C: ConnectionTrait
     {
         let ItemsAndPagesNumber {

@@ -14,6 +14,7 @@ pub fn router() -> Router {
         .route("/interface/get", get(get_interface))
         .route("/interface/list_menu", get(list_by_menu))
         .route("/interface/list_cat", get(list_by_cat))
+        .route("/interface/list", get(list))
 }
 
 async fn add_interface_cat(
@@ -112,6 +113,16 @@ async fn list_by_cat(
     Query(req): Query<InterfaceList>
 ) -> Result<ResData<PageList<InterfaceInfo>>> {
     let data = interface_service::list_by_cat(&ctx.db, auth_user.id, req).await?;
+
+    Ok(ResData::success(data))
+}
+
+async fn list(
+    ctx: Extension<Context>,
+    auth_user: AuthUser,
+    Query(req): Query<InterfaceList>
+) -> Result<ResData<PageList<InterfaceInfo>>> {
+    let data = interface_service::list(&ctx.db, auth_user.id, req).await?;
 
     Ok(ResData::success(data))
 }

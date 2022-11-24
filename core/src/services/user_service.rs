@@ -118,7 +118,7 @@ pub async fn list(db: &DatabaseConnection, uid: u32, query: UserList) -> Result<
         return Err(Error::Custom(405, String::from("没有权限")));
     }
 
-    let result = user_entity::Entity::find_user_list(db, query).await?;
+    let result = user_entity::Entity::find_user_list_page(db, query).await?;
 
     Ok(result)
 }

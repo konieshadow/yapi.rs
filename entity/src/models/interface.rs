@@ -232,7 +232,7 @@ impl Entity {
             .await
     }
 
-    pub async fn find_interface_info_by_cat<C>(db: &C, project_id: u32, query: InterfaceList) -> Result<PageList<InterfaceInfo>, DbErr>
+    pub async fn find_interface_info_page_by_cat<C>(db: &C, project_id: u32, query: InterfaceList) -> Result<PageList<InterfaceInfo>, DbErr>
     where C: ConnectionTrait
     {
         let ItemsAndPagesNumber {
@@ -263,6 +263,45 @@ impl Entity {
             .filter(
                 Column::ProjectId.eq(project_id)
                     .and(Column::CatId.eq(query.id))
+            )
+            .order_by_asc(Column::Id)
+            .into_model::<InterfaceInfo>()
+            .paginate(db, query.page_size())
+            .fetch_page(query.page())
+            .await?;
+
+        Ok(PageList::new(count, total, list))
+    }
+
+    pub async fn find_interface_info_page_by_project<C>(db: &C, query: InterfaceList) -> Result<PageList<InterfaceInfo>, DbErr>
+    where C: ConnectionTrait
+    {
+        let ItemsAndPagesNumber {
+            number_of_items: count,
+            number_of_pages: total,
+        } = Entity::find()
+            .filter(
+                Column::ProjectId.eq(query.id)
+            )
+            .paginate(db, query.page_size())
+            .num_items_and_pages()
+            .await?;
+
+        let list = Entity::find()
+            .select_only()
+            .column(Column::Id)
+            .column(Column::Uid)
+            .column(Column::ProjectId)
+            .column(Column::CatId)
+            .column(Column::Title)
+            .column(Column::Method)
+            .column(Column::Path)
+            .column(Column::Status)
+            .column(Column::ApiOpened)
+            .column(Column::AddTime)
+            .column(Column::UpTime)
+            .filter(
+                Column::ProjectId.eq(query.id)
             )
             .order_by_asc(Column::Id)
             .into_model::<InterfaceInfo>()

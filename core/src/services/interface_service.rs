@@ -189,7 +189,16 @@ pub async fn list_by_cat(db: &DatabaseConnection, uid: u32, query: InterfaceList
     // 权限校验
     get_user_project_role(db, uid, interface_cat.project_id).await?.check_permission(ActionType::View)?;
 
-    let result = interface_entity::Entity::find_interface_info_by_cat(db, interface_cat.project_id, query).await?;
+    let result = interface_entity::Entity::find_interface_info_page_by_cat(db, interface_cat.project_id, query).await?;
+
+    Ok(result)
+}
+
+pub async fn list(db: &DatabaseConnection, uid: u32, query: InterfaceList) -> Result<PageList<InterfaceInfo>> {
+    // 权限校验
+    get_user_project_role(db, uid, query.id).await?.check_permission(ActionType::View)?;
+
+    let result = interface_entity::Entity::find_interface_info_page_by_project(db, query).await?;
 
     Ok(result)
 }
