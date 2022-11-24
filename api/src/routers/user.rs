@@ -57,10 +57,10 @@ async fn status(
 
 async fn list(
     ctx: Extension<Context>,
-    _: AuthUser,
+    auth_user: AuthUser,
     Query(req): Query<UserList>,
 ) -> Result<ResData<PageList<UserInfo>>> {
-    let data = user_service::list(&ctx.db, req).await?;
+    let data = user_service::list(&ctx.db, auth_user.id, req).await?;
 
     Ok(ResData::success(data))
 }

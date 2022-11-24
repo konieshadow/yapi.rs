@@ -1,5 +1,5 @@
 use sea_orm::{DatabaseConnection, TransactionTrait, EntityTrait, QueryFilter, ColumnTrait, ActiveEnum};
-use yapi_common::types::{InterfaceAdd, InterfaceDetail, InterfaceUp, UpdateResult, DeleteResult, InterfaceMenu, InterfaceInfo, List};
+use yapi_common::types::{InterfaceAdd, InterfaceDetail, InterfaceUp, UpdateResult, DeleteResult, InterfaceMenu, InterfaceInfo, InterfaceList, PageList};
 use yapi_entity::{interface_cat_entity, interface_entity::{self, InterfaceStatus, ReqHeaders, ResBodyType, ReqParams, ReqQuerys, ReqBodyType, ReqBodyForms}, traits::{AutoTimestamp}, set};
 use crate::{Result, error::Error};
 
@@ -179,9 +179,9 @@ pub async fn list_by_menu(db: &DatabaseConnection, uid: u32, project_id: u32) ->
     Ok(result)
 }
 
-pub async fn list_by_cat(db: &DatabaseConnection, uid: u32, cat_id: u32) -> Result<List<InterfaceInfo>> {
+pub async fn list_by_cat(db: &DatabaseConnection, uid: u32, query: InterfaceList) -> Result<PageList<InterfaceInfo>> {
     // 查询分类
-    let interface_cat = interface_cat_entity::Entity::find_by_id(cat_id)
+    let interface_cat = interface_cat_entity::Entity::find_by_id(query.id)
         .one(db)
         .await?
         .ok_or_else(|| Error::Custom(401, String::from("分类不存在")))?;
@@ -189,7 +189,7 @@ pub async fn list_by_cat(db: &DatabaseConnection, uid: u32, cat_id: u32) -> Resu
     // 权限校验
     get_user_project_role(db, uid, interface_cat.project_id).await?.check_permission(ActionType::View)?;
 
-    let result = interface_entity::Entity::find_interface_info_by_cat(db, interface_cat.project_id, cat_id).await?;
+    let result = interface_entity::Entity::find_interface_info_by_cat(db, interface_cat.project_id, query).await?;
 
-    Ok(List::new(result))
+    Ok(result)
 }

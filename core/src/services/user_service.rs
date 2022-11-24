@@ -1,10 +1,9 @@
 use anyhow::Context;
 use argon2::{password_hash::SaltString, Argon2, PasswordHash};
 use sea_orm::{
-    ColumnTrait, Condition, DatabaseConnection, EntityTrait, FromQueryResult, ItemsAndPagesNumber,
+    ColumnTrait, Condition, DatabaseConnection, EntityTrait, FromQueryResult,
     PaginatorTrait, QueryFilter, QueryOrder, QuerySelect, Set, TransactionTrait,
 };
-use yapi_common::traits::Paginator;
 use yapi_common::types::{PageList, UserInfo, UserLogin, UserReg, UserSearch, UserList};
 use yapi_entity::base::{TypeVisible};
 use yapi_entity::traits::AutoTimestamp;
@@ -109,25 +108,19 @@ pub async fn status(db: &DatabaseConnection, user_id: Option<u32>) -> Result<Use
     Ok(user_info)
 }
 
-pub async fn list(db: &DatabaseConnection, query: UserList) -> Result<PageList<UserInfo>> {
-    let ItemsAndPagesNumber {
-        number_of_items: count,
-        number_of_pages: total,
-    } = user_entity::Entity::find()
-        .order_by_desc(user_entity::Column::Id)
-        .paginate(db, query.page_size())
-        .num_items_and_pages()
-        .await?;
-
-    let list: Vec<UserInfo> = user_entity::Entity::find()
-        .order_by_desc(user_entity::Column::Id)
-        .paginate(db, query.page_size())
-        .fetch_page(query.page())
+pub async fn list(db: &DatabaseConnection, uid: u32, query: UserList) -> Result<PageList<UserInfo>> {
+    // 查询用户角色
+    let user_role = user_entity::Entity::find_user_role_by_id(db, uid)
         .await?
-        .into_iter().map(|m| m.to_user_info())
-        .collect();
+        .ok_or_else(|| Error::Custom(405, String::from("没有权限")))?;
 
-    Ok(PageList::new(count, total, list))
+    if !user_role.is_admin() {
+        return Err(Error::Custom(405, String::from("没有权限")));
+    }
+
+    let result = user_entity::Entity::find_user_list(db, query).await?;
+
+    Ok(result)
 }
 
 pub async fn search(db: &DatabaseConnection, search: &str) -> Result<Vec<UserSearch>> {

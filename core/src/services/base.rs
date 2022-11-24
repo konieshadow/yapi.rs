@@ -12,7 +12,6 @@ use crate::{error::Error, Result};
 
 #[derive(Debug, Clone)]
 pub enum ActionType {
-    Admin = 0,
     Danger = 10,
     Edit = 20,
     View = 30,
@@ -20,7 +19,6 @@ pub enum ActionType {
 
 #[derive(Debug, Clone)]
 pub enum PermissionRole {
-    Admin = 0,
     Owner = 10,
     Dev = 20,
     Guest = 30,
@@ -88,7 +86,7 @@ where
             // 普通分组
             if user_role == UserRole::Admin {
                 // 管理员
-                Ok(PermissionRole::Admin)
+                Ok(PermissionRole::Owner)
             } else {
                 // 查询用户分组角色
                 Ok(group_member_entity::Entity::find()
@@ -119,7 +117,7 @@ where
     if let Some(user_role) = user_role {
         if user_role == UserRole::Admin {
             // 管理员
-            Ok(PermissionRole::Admin)
+            Ok(PermissionRole::Owner)
         } else {
             // 查询用户项目角色
             Ok(

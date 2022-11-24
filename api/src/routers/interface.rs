@@ -1,5 +1,5 @@
 use axum::{Router, Extension, routing::{post, get}, extract::Query, Json};
-use yapi_common::types::{InterfaceCatAdd, InterfaceCat, InterfaceCatUp, UpdateResult, GetById, DeleteResult, IndexItem, InterfaceAdd, InterfaceDetail, InterfaceUp, InterfaceMenu, List, InterfaceInfo};
+use yapi_common::types::{InterfaceCatAdd, InterfaceCat, InterfaceCatUp, UpdateResult, GetById, DeleteResult, IndexItem, InterfaceAdd, InterfaceDetail, InterfaceUp, InterfaceMenu, InterfaceInfo, InterfaceList, PageList};
 use yapi_core::{Context, extractors::{auth::AuthUser, json::ValidateJson}, res::ResData, Result, services::{interface_cat_service, interface_service}};
 
 pub fn router() -> Router {
@@ -109,9 +109,9 @@ async fn list_by_menu(
 async fn list_by_cat(
     ctx: Extension<Context>,
     auth_user: AuthUser,
-    Query(req): Query<GetById>
-) -> Result<ResData<List<InterfaceInfo>>> {
-    let data = interface_service::list_by_cat(&ctx.db, auth_user.id, req.id).await?;
+    Query(req): Query<InterfaceList>
+) -> Result<ResData<PageList<InterfaceInfo>>> {
+    let data = interface_service::list_by_cat(&ctx.db, auth_user.id, req).await?;
 
     Ok(ResData::success(data))
 }

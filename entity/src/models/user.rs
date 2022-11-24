@@ -1,6 +1,7 @@
-use sea_orm::{entity::prelude::*, ConnectionTrait, QuerySelect, FromQueryResult};
+use sea_orm::{entity::prelude::*, ConnectionTrait, QuerySelect, FromQueryResult, ItemsAndPagesNumber, QueryOrder};
 use serde::{Deserialize, Serialize};
-use yapi_common::types::{UserInfo, UserSearch};
+use yapi_common::types::{UserInfo, UserSearch, UserList, PageList};
+use yapi_common::traits::Paginator;
 use yapi_macros::AutoTimestampModel;
 
 use crate::traits::AutoTimestamp;
@@ -14,6 +15,12 @@ pub enum UserRole {
 
     #[sea_orm(string_value = "member")]
     Member,
+}
+
+impl UserRole {
+    pub fn is_admin(&self) -> bool {
+        self == &Self::Admin
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, DeriveEntityModel)]
@@ -128,5 +135,27 @@ impl Entity {
             .collect();
 
         Ok(result)
+    }
+
+    pub async fn find_user_list<C>(db: &C, query: UserList) -> Result<PageList<UserInfo>, DbErr>
+    where C: ConnectionTrait
+    {
+        let ItemsAndPagesNumber {
+            number_of_items: count,
+            number_of_pages: total,
+        } = Entity::find()
+            .paginate(db, query.page_size())
+            .num_items_and_pages()
+            .await?;
+    
+        let list: Vec<UserInfo> = Entity::find()
+            .order_by_desc(Column::Id)
+            .paginate(db, query.page_size())
+            .fetch_page(query.page())
+            .await?
+            .into_iter().map(|m| m.to_user_info())
+            .collect();
+    
+        Ok(PageList::new(count, total, list))
     }
 }

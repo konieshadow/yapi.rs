@@ -1,9 +1,9 @@
 use sea_orm::{FromJsonQueryResult, FromQueryResult};
 use serde::{Serialize, Deserialize};
 use validator::{Validate, ValidationError};
+use yapi_macros::PaginatorQuery;
 
-use crate::utils::validator::valid_one_of;
-
+use crate::{traits::Paginator, utils::validator::valid_one_of};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
 pub struct ReqParam {
@@ -214,4 +214,11 @@ pub struct InterfaceInfo {
     pub api_opened: bool,
     pub add_time: u32,
     pub up_time: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PaginatorQuery)]
+pub struct InterfaceList {
+    pub id: u32,
+    page: Option<usize>,
+    limit: Option<usize>,
 }

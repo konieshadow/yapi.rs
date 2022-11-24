@@ -1,8 +1,8 @@
 ### 接口名称
-获取分类下接口列表
+获取接口列表
 
 ### 接口路径
-GET /api/interface/list_cat
+GET /api/interface/list
 
 ### 请求参数
 
@@ -16,7 +16,7 @@ Authorization | string | 必须     | Token xxxxxx
 
 参数名称 | 类型 | 出现要求 | 描述
 :--------|:-----|:-------|:----
-id       | int  | 必须     | 分类id
+id       | int  | 必须     | 项目id
 page     | int  | 非必须   | 当前页数
 limit    | int  | 非必须   | 每页数量
 

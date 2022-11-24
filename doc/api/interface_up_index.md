@@ -1,8 +1,8 @@
 ### 接口名称
-更新分类索引
+更新接口索引
 
 ### 接口路径
-POST /api/interface/up_cat_index
+POST /api/interface/up_index
 
 ### 请求参数
 
@@ -17,7 +17,7 @@ Authorization | string | 必须     | Token xxxxxx
 参数名称    | 类型  | 出现要求 | 描述
 :-----------|:------|:-------|:------
 []          | Array | 必须     | 列表
-&emsp;id    | int   | 必须     | 分类id
+&emsp;id    | int   | 必须     | 接口id
 &emsp;index | int   | 必须     | 修改后的索引
 
 ### 响应参数
@@ -33,6 +33,6 @@ modified_count | int  | 必须     | 更新条目数
 响应码 | 说明
 :------|:-------
 40011  | 未登录
-401    | 分类不存在
-402    | 分类列表不完整
+401    | 接口不存在
+402    | 接口列表不完整
 405    | 没有权限

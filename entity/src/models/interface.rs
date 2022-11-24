@@ -1,9 +1,11 @@
-use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Alias, Expr}, QuerySelect, QueryOrder};
+use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Alias, Expr}, QuerySelect, QueryOrder, ItemsAndPagesNumber};
 use serde::{Serialize, Deserialize};
-use yapi_common::types::{ReqBodyForm, ReqQuery, ReqHeader, InterfaceDetail, ReqParam, InterfaceInfo};
+use yapi_common::types::{ReqBodyForm, ReqQuery, ReqHeader, InterfaceDetail, ReqParam, InterfaceInfo, PageList, InterfaceList};
+use yapi_common::traits::Paginator;
 use yapi_macros::AutoTimestampModel;
 
 use crate::traits::AutoTimestamp;
+
 
 #[derive(Debug, Clone, PartialEq, Eq, EnumIter, DeriveActiveEnum)]
 #[sea_orm(rs_type = "String", db_type = "String(Some(1))")]
@@ -230,10 +232,22 @@ impl Entity {
             .await
     }
 
-    pub async fn find_interface_info_by_cat<C>(db: &C, project_id: u32, cat_id: u32) -> Result<Vec<InterfaceInfo>, DbErr>
+    pub async fn find_interface_info_by_cat<C>(db: &C, project_id: u32, query: InterfaceList) -> Result<PageList<InterfaceInfo>, DbErr>
     where C: ConnectionTrait
     {
-        Entity::find()
+        let ItemsAndPagesNumber {
+            number_of_items: count,
+            number_of_pages: total,
+        } = Entity::find()
+            .filter(
+                Column::ProjectId.eq(project_id)
+                    .and(Column::CatId.eq(query.id))
+            )
+            .paginate(db, query.page_size())
+            .num_items_and_pages()
+            .await?;
+
+        let list = Entity::find()
             .select_only()
             .column(Column::Id)
             .column(Column::Uid)
@@ -248,11 +262,14 @@ impl Entity {
             .column(Column::UpTime)
             .filter(
                 Column::ProjectId.eq(project_id)
-                    .and(Column::CatId.eq(cat_id))
+                    .and(Column::CatId.eq(query.id))
             )
             .order_by_asc(Column::Id)
             .into_model::<InterfaceInfo>()
-            .all(db)
-            .await
+            .paginate(db, query.page_size())
+            .fetch_page(query.page())
+            .await?;
+
+        Ok(PageList::new(count, total, list))
     }
 }
