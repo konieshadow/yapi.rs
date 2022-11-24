@@ -17,8 +17,6 @@ Authorization | string | 必须     | Token xxxxxx
 参数名称 | 类型 | 出现要求 | 描述
 :--------|:-----|:-------|:----
 id       | int  | 必须     | 分类id
-page     | int  | 非必须   | 当前页数
-limit    | int  | 非必须   | 每页数量
 
 ### 响应参数
 
@@ -26,8 +24,6 @@ limit    | int  | 非必须   | 每页数量
 
 参数名称         | 类型   | 出现要求 | 描述
 :----------------|:-------|:-------|:----------------
-count            | int    | 必须     | 总数量
-total            | int    | 必须     | 总页数
 list[]           | Array  | 必须     | 列表
 &emsp;id         | int    | 必须     | 接口id
 &emsp;uid        | int    | 必须     | 创建者id

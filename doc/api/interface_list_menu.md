@@ -38,6 +38,7 @@ project_id | int  | 必须     | 项目id
 &emsp;&emsp;method     | string | 必须     | 请求方法
 &emsp;&emsp;path       | string | 必须     | 请求路径
 &emsp;&emsp;status     | string | 必须     | 完成状态 undone，done
+&emsp;&emsp;api_opened       | bool   | 必须     | 是否是开放接口
 &emsp;&emsp;add_time   | int    | 必须     | 创建时间戳
 &emsp;&emsp;up_time    | int    | 必须     | 更新时间戳
 &emsp;add_time         | int    | 必须     | 创建时间戳

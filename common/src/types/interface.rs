@@ -1,4 +1,4 @@
-use sea_orm::FromJsonQueryResult;
+use sea_orm::{FromJsonQueryResult, FromQueryResult};
 use serde::{Serialize, Deserialize};
 use validator::{Validate, ValidationError};
 
@@ -164,7 +164,7 @@ pub struct InterfaceUp {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct InterfaceInfo {
+pub struct InterfaceDetail {
     pub id: u32,
     pub uid: u32,
     pub cat_id: u32,
@@ -186,6 +186,32 @@ pub struct InterfaceInfo {
     pub res_body_type: String,
     pub res_body_is_json_schema: bool,
     pub res_body: String,
+    pub add_time: u32,
+    pub up_time: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InterfaceMenu {
+    pub id: u32,
+    pub uid: u32,
+    pub project_id: u32,
+    pub name: String,
+    pub list: Vec<InterfaceInfo>,
+    pub add_time: u32,
+    pub up_time: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+pub struct InterfaceInfo {
+    pub id: u32,
+    pub uid: u32,
+    pub cat_id: u32,
+    pub project_id: u32,
+    pub title: String,
+    pub method: String,
+    pub path: String,
+    pub status: String,
+    pub api_opened: bool,
     pub add_time: u32,
     pub up_time: u32,
 }

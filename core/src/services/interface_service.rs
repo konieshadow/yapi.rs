@@ -1,11 +1,11 @@
 use sea_orm::{DatabaseConnection, TransactionTrait, EntityTrait, QueryFilter, ColumnTrait, ActiveEnum};
-use yapi_common::types::{InterfaceAdd, InterfaceInfo, InterfaceUp, UpdateResult, DeleteResult};
+use yapi_common::types::{InterfaceAdd, InterfaceDetail, InterfaceUp, UpdateResult, DeleteResult, InterfaceMenu, InterfaceInfo, List};
 use yapi_entity::{interface_cat_entity, interface_entity::{self, InterfaceStatus, ReqHeaders, ResBodyType, ReqParams, ReqQuerys, ReqBodyType, ReqBodyForms}, traits::{AutoTimestamp}, set};
 use crate::{Result, error::Error};
 
 use super::base::{get_user_project_role, ActionType};
 
-pub async fn add(db: &DatabaseConnection, uid: u32, interface_add: InterfaceAdd) -> Result<InterfaceInfo> {
+pub async fn add(db: &DatabaseConnection, uid: u32, interface_add: InterfaceAdd) -> Result<InterfaceDetail> {
     let tx = db.begin().await?;
 
     // 查询分类
@@ -40,7 +40,7 @@ pub async fn add(db: &DatabaseConnection, uid: u32, interface_add: InterfaceAdd)
     let interface_info = interface_entity::Entity::find_by_id(interface_id)
         .one(&tx)
         .await?
-        .map(|m| m.to_interface_info())
+        .map(|m| m.to_interface_detail())
         .ok_or_else(|| Error::Anyhow(anyhow::anyhow!("insert to db failed")))?;
 
     tx.commit().await?;
@@ -131,15 +131,65 @@ pub async fn del(db: &DatabaseConnection, uid: u32, interface_id: u32) -> Result
     Ok(result.into())
 }
 
-pub async fn get(db: &DatabaseConnection, uid: u32, interface_id: u32) -> Result<InterfaceInfo> {
+pub async fn get(db: &DatabaseConnection, uid: u32, interface_id: u32) -> Result<InterfaceDetail> {
     let interface_info = interface_entity::Entity::find_by_id(interface_id)
         .one(db)
         .await?
-        .map(|m| m.to_interface_info())
+        .map(|m| m.to_interface_detail())
         .ok_or_else(|| Error::Custom(401, String::from("接口不存在")))?;
 
     // 权限校验
     get_user_project_role(db, uid, interface_info.project_id).await?.check_permission(ActionType::View)?;
 
     Ok(interface_info)
+}
+
+
+pub async fn list_by_menu(db: &DatabaseConnection, uid: u32, project_id: u32) -> Result<Vec<InterfaceMenu>> {
+    // 权限校验
+    get_user_project_role(db, uid, project_id).await?.check_permission(ActionType::View)?;
+
+    // 查询项目接口分类
+    let cat = interface_cat_entity::Entity::find_interface_cat_by_project(db, project_id).await?;
+
+    // 查询所有接口
+    let interface_list = interface_entity::Entity::find_interface_info_by_project(db, project_id).await?;
+
+    let mut result: Vec<InterfaceMenu> = cat.into_iter()
+        .map(|m| InterfaceMenu {
+            id: m.id,
+            uid: m.uid,
+            project_id: m.project_id,
+            name: m.name,
+            list: Vec::new(),
+            add_time: m.add_time,
+            up_time: m.up_time,
+        })
+        .collect();
+    // 排序以便查找
+    result.sort_unstable_by_key(|c| c.id);
+
+    // 遍历接口并插入到对应的分类中
+    for interface in interface_list {
+        if let Ok(i) = result.binary_search_by_key(&interface.cat_id, |c| c.id) {
+            result[i].list.push(interface)
+        }
+    }
+
+    Ok(result)
+}
+
+pub async fn list_by_cat(db: &DatabaseConnection, uid: u32, cat_id: u32) -> Result<List<InterfaceInfo>> {
+    // 查询分类
+    let interface_cat = interface_cat_entity::Entity::find_by_id(cat_id)
+        .one(db)
+        .await?
+        .ok_or_else(|| Error::Custom(401, String::from("分类不存在")))?;
+
+    // 权限校验
+    get_user_project_role(db, uid, interface_cat.project_id).await?.check_permission(ActionType::View)?;
+
+    let result = interface_entity::Entity::find_interface_info_by_cat(db, interface_cat.project_id, cat_id).await?;
+
+    Ok(List::new(result))
 }

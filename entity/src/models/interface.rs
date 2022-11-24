@@ -1,6 +1,6 @@
-use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Alias, Expr}, QuerySelect};
+use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Alias, Expr}, QuerySelect, QueryOrder};
 use serde::{Serialize, Deserialize};
-use yapi_common::types::{ReqBodyForm, ReqQuery, ReqHeader, InterfaceInfo, ReqParam};
+use yapi_common::types::{ReqBodyForm, ReqQuery, ReqHeader, InterfaceDetail, ReqParam, InterfaceInfo};
 use yapi_macros::AutoTimestampModel;
 
 use crate::traits::AutoTimestamp;
@@ -133,8 +133,8 @@ pub enum Relation {}
 impl ActiveModelBehavior for ActiveModel {}
 
 impl Model {
-    pub fn to_interface_info(self) -> InterfaceInfo {
-        InterfaceInfo {
+    pub fn to_interface_detail(self) -> InterfaceDetail {
+        InterfaceDetail {
             id: self.id,
             uid: self.uid,
             cat_id: self.cat_id,
@@ -204,6 +204,55 @@ impl Entity {
             .column(Column::CatId)
             .into_model::<InterfaceBaseInfo>()
             .one(db)
+            .await
+    }
+
+    pub async fn find_interface_info_by_project<C>(db: &C, project_id: u32) -> Result<Vec<InterfaceInfo>, DbErr>
+    where C: ConnectionTrait
+    {
+        Entity::find()
+            .select_only()
+            .column(Column::Id)
+            .column(Column::Uid)
+            .column(Column::ProjectId)
+            .column(Column::CatId)
+            .column(Column::Title)
+            .column(Column::Method)
+            .column(Column::Path)
+            .column(Column::Status)
+            .column(Column::ApiOpened)
+            .column(Column::AddTime)
+            .column(Column::UpTime)
+            .filter(Column::ProjectId.eq(project_id))
+            .order_by_asc(Column::Id)
+            .into_model::<InterfaceInfo>()
+            .all(db)
+            .await
+    }
+
+    pub async fn find_interface_info_by_cat<C>(db: &C, project_id: u32, cat_id: u32) -> Result<Vec<InterfaceInfo>, DbErr>
+    where C: ConnectionTrait
+    {
+        Entity::find()
+            .select_only()
+            .column(Column::Id)
+            .column(Column::Uid)
+            .column(Column::ProjectId)
+            .column(Column::CatId)
+            .column(Column::Title)
+            .column(Column::Method)
+            .column(Column::Path)
+            .column(Column::Status)
+            .column(Column::ApiOpened)
+            .column(Column::AddTime)
+            .column(Column::UpTime)
+            .filter(
+                Column::ProjectId.eq(project_id)
+                    .and(Column::CatId.eq(cat_id))
+            )
+            .order_by_asc(Column::Id)
+            .into_model::<InterfaceInfo>()
+            .all(db)
             .await
     }
 }
