@@ -15,6 +15,7 @@ pub fn router() -> Router {
         .route("/interface/list_menu", get(list_by_menu))
         .route("/interface/list_cat", get(list_by_cat))
         .route("/interface/list", get(list))
+        .route("/interface/up_index", post(up_index))
 }
 
 async fn add_interface_cat(
@@ -123,6 +124,16 @@ async fn list(
     Query(req): Query<InterfaceList>
 ) -> Result<ResData<PageList<InterfaceInfo>>> {
     let data = interface_service::list(&ctx.db, auth_user.id, req).await?;
+
+    Ok(ResData::success(data))
+}
+
+async fn up_index(
+    ctx: Extension<Context>,
+    auth_user: AuthUser,
+    Json(req): Json<Vec<IndexItem>>
+) -> Result<ResData<UpdateResult>> {
+    let data = interface_service::up_index(&ctx.db, auth_user.id, req).await?;
 
     Ok(ResData::success(data))
 }

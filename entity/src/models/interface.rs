@@ -226,7 +226,7 @@ impl Entity {
             .column(Column::AddTime)
             .column(Column::UpTime)
             .filter(Column::ProjectId.eq(project_id))
-            .order_by_asc(Column::Id)
+            .order_by_asc(Column::Index)
             .into_model::<InterfaceInfo>()
             .all(db)
             .await
@@ -264,7 +264,7 @@ impl Entity {
                 Column::ProjectId.eq(project_id)
                     .and(Column::CatId.eq(query.id))
             )
-            .order_by_asc(Column::Id)
+            .order_by_asc(Column::Index)
             .into_model::<InterfaceInfo>()
             .paginate(db, query.page_size())
             .fetch_page(query.page())
@@ -310,5 +310,30 @@ impl Entity {
             .await?;
 
         Ok(PageList::new(count, total, list))
+    }
+
+    pub async fn find_cat_ids_by_interface_ids<C>(db: &C, interface_ids: &[u32]) -> Result<Vec<u32>, DbErr>
+    where C: ConnectionTrait
+    {
+        #[derive(FromQueryResult)]
+        struct Result {
+            cat_id: u32,
+        }
+
+        let mut stmt = Query::select();
+        stmt.column(Column::CatId)
+            .distinct()
+            .from(Entity)
+            .and_where(Column::Id.is_in(interface_ids.to_owned()));
+
+        let builder = db.get_database_backend();
+        let list = Result::find_by_statement(builder.build(&stmt))
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|m| m.cat_id)
+            .collect();
+
+        Ok(list)
     }
 }

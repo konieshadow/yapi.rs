@@ -1,4 +1,4 @@
-use sea_orm::{entity::prelude::*, ConnectionTrait, sea_query::{Query, Expr, Alias}, FromQueryResult};
+use sea_orm::{entity::prelude::*, ConnectionTrait, sea_query::{Query, Expr, Alias}, FromQueryResult, QueryOrder};
 use yapi_common::types::InterfaceCat;
 use yapi_macros::AutoTimestampModel;
 
@@ -51,6 +51,7 @@ impl Entity {
     {
         let list: Vec<InterfaceCat> = Entity::find()
             .filter(Column::ProjectId.eq(project_id))
+            .order_by_asc(Column::Index)
             .all(db)
             .await?
             .into_iter()

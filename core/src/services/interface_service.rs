@@ -1,5 +1,5 @@
-use sea_orm::{DatabaseConnection, TransactionTrait, EntityTrait, QueryFilter, ColumnTrait, ActiveEnum};
-use yapi_common::types::{InterfaceAdd, InterfaceDetail, InterfaceUp, UpdateResult, DeleteResult, InterfaceMenu, InterfaceInfo, InterfaceList, PageList};
+use sea_orm::{DatabaseConnection, TransactionTrait, EntityTrait, QueryFilter, ColumnTrait, ActiveEnum, PaginatorTrait, sea_query::Expr};
+use yapi_common::types::{InterfaceAdd, InterfaceDetail, InterfaceUp, UpdateResult, DeleteResult, InterfaceMenu, InterfaceInfo, InterfaceList, PageList, IndexItem};
 use yapi_entity::{interface_cat_entity, interface_entity::{self, InterfaceStatus, ReqHeaders, ResBodyType, ReqParams, ReqQuerys, ReqBodyType, ReqBodyForms}, traits::{AutoTimestamp}, set};
 use crate::{Result, error::Error};
 
@@ -201,4 +201,54 @@ pub async fn list(db: &DatabaseConnection, uid: u32, query: InterfaceList) -> Re
     let result = interface_entity::Entity::find_interface_info_page_by_project(db, query).await?;
 
     Ok(result)
+}
+
+pub async fn up_index(db: &DatabaseConnection, uid: u32, index_list: Vec<IndexItem>) -> Result<UpdateResult> {
+    let tx = db.begin().await?;
+
+    // 校验所传接口是否在同一个分类里
+    let mut interface_ids: Vec<u32> = index_list.clone().into_iter().map(|item| item.id).collect();
+    // 去重
+    interface_ids.sort_unstable();
+    interface_ids.dedup();
+
+    let cat_ids = interface_entity::Entity::find_cat_ids_by_interface_ids(&tx, &interface_ids).await?;
+    if cat_ids.len() != 1 {
+        return Err(Error::Custom(402, String::from("接口列表不完整")));
+    }
+
+    // 查询分类
+    let interface_cat = interface_cat_entity::Entity::find_by_id(cat_ids[0])
+        .one(db)
+        .await?
+        .ok_or_else(|| Error::Custom(402, String::from("接口列表不完整")))?;
+
+    // 权限校验
+    get_user_project_role(&tx, uid, interface_cat.project_id).await?.check_permission(ActionType::Edit)?;
+
+    // 查询该分类下接口数量
+    let interface_count = interface_entity::Entity::find()
+        .filter(
+            interface_entity::Column::ProjectId.eq(interface_cat.project_id)
+                .and(interface_entity::Column::CatId.eq(interface_cat.id))
+        )
+        .count(&tx)
+        .await?;
+
+    if interface_count != interface_ids.len() {
+        return Err(Error::Custom(402, String::from("接口列表不完整")));
+    }
+
+    // 循环更新索引
+    for item in index_list {
+        interface_entity::Entity::update_many()
+            .col_expr(interface_entity::Column::Index, Expr::value(item.index))
+            .filter(interface_entity::Column::Id.eq(item.id))
+            .exec(&tx)
+            .await?;
+    }
+
+    tx.commit().await?;
+
+    Ok(UpdateResult::of(interface_count as u32))
 }
