@@ -1,5 +1,5 @@
 use sea_orm::{DatabaseConnection, TransactionTrait, EntityTrait, QueryFilter, ColumnTrait, ActiveEnum};
-use yapi_common::types::{InterfaceAdd, InterfaceInfo, InterfaceUp, UpdateResult};
+use yapi_common::types::{InterfaceAdd, InterfaceInfo, InterfaceUp, UpdateResult, DeleteResult};
 use yapi_entity::{interface_cat_entity, interface_entity::{self, InterfaceStatus, ReqHeaders, ResBodyType, ReqParams, ReqQuerys, ReqBodyType, ReqBodyForms}, traits::{AutoTimestamp}, set};
 use crate::{Result, error::Error};
 
@@ -107,4 +107,39 @@ pub async fn up(db: &DatabaseConnection, uid: u32, interface_up: InterfaceUp) ->
     tx.commit().await?;
 
     Ok(result.into())
+}
+
+pub async fn del(db: &DatabaseConnection, uid: u32, interface_id: u32) -> Result<DeleteResult> {
+    let tx = db.begin().await?;
+
+    // 查询接口基本信息
+    let base_info = interface_entity::Entity::find_interface_base_info(&tx, interface_id)
+        .await?
+        .ok_or_else(|| Error::Custom(401, String::from("接口不存在")))?;
+
+    // 权限校验
+    get_user_project_role(&tx, uid, base_info.project_id).await?.check_permission(ActionType::Edit)?;
+
+    // 删除接口
+    let result = interface_entity::Entity::delete_many()
+        .filter(interface_entity::Column::Id.eq(interface_id))
+        .exec(&tx)
+        .await?;
+
+    tx.commit().await?;
+
+    Ok(result.into())
+}
+
+pub async fn get(db: &DatabaseConnection, uid: u32, interface_id: u32) -> Result<InterfaceInfo> {
+    let interface_info = interface_entity::Entity::find_by_id(interface_id)
+        .one(db)
+        .await?
+        .map(|m| m.to_interface_info())
+        .ok_or_else(|| Error::Custom(401, String::from("接口不存在")))?;
+
+    // 权限校验
+    get_user_project_role(db, uid, interface_info.project_id).await?.check_permission(ActionType::View)?;
+
+    Ok(interface_info)
 }
