@@ -3,8 +3,7 @@ import { FC } from 'react'
 import { Button, Card, Col, Row } from 'antd'
 import LogoSVG from '../../components/LogoSVG';
 import { Link } from 'react-router-dom';
-import Icon from '@ant-design/icons';
-import IconFont from '../../components/iconfont';
+import IconFont from '../../components/IconFont';
 
 const HomeGuest: FC = () => (
   <div className="g-body">

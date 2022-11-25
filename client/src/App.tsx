@@ -4,6 +4,7 @@ import {
   Route,
   createBrowserRouter,
 } from 'react-router-dom';
+import Footer, { defaultFootList } from './components/Footer/Footer';
 import Home from './containers/Home/Home';
 
 const router = createBrowserRouter([
@@ -18,7 +19,14 @@ const router = createBrowserRouter([
 ]);
 
 const App: FC = () => (
-  <RouterProvider router={router} />
+  <div className="g-main">
+    <div className="router-main">
+      <div className="router-container">
+      <RouterProvider router={router} />
+      </div>
+    </div>
+    <Footer footList={defaultFootList} />
+  </div>
 )
 
 export default App
