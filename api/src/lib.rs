@@ -3,8 +3,9 @@ mod routers;
 use std::{net::SocketAddr, sync::Arc};
 
 use crate::routers::routers;
-use axum::{Server, Extension};
+use axum::{Server, Extension, http::Method};
 use sea_orm::DatabaseConnection;
+use tower_http::cors::{CorsLayer, Any};
 use yapi_core::{config::Config, Context};
 
 pub async fn start(config: Config, db: DatabaseConnection) -> anyhow::Result<()> {
@@ -13,7 +14,13 @@ pub async fn start(config: Config, db: DatabaseConnection) -> anyhow::Result<()>
         db,
     };
 
+    // cors support
+    let cors = CorsLayer::new()
+        .allow_methods([Method::GET, Method::POST])
+        .allow_origin(Any);
+
     let app = routers()
+        .layer(cors)
         .layer(Extension(context));
 
     let addr: SocketAddr = config.server_addr.parse().unwrap();
