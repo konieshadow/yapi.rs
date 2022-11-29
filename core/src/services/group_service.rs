@@ -153,6 +153,15 @@ pub async fn del(db: &DatabaseConnection, uid: u32, group_id: u32) -> Result<Del
     Ok(result.into())
 }
 
+pub async fn get_mygroup(db: &DatabaseConnection, uid: u32) -> Result<GroupInfo> {
+    // 查找个人空间
+    let private_group = group_entity::Entity::find_private_group(db, uid)
+        .await?
+        .ok_or_else(|| Error::Custom(401, String::from("分组不存在")))?;
+
+    Ok(private_group)
+}
+
 pub async fn get(db: &DatabaseConnection, uid: u32, group_id: u32) -> Result<GroupInfo> {
     // 校验权限
     get_user_group_role(db, uid, group_id).await?

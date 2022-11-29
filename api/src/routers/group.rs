@@ -12,6 +12,7 @@ pub fn router() -> Router {
         .route("/group/add", post(add))
         .route("/group/up", post(up))
         .route("/group/del", post(del))
+        .route("/group/get_mygroup", get(get_mygroup))
         .route("/group/get", get(get_group))
         .route("/group/list", get(list_group))
         .route("/group/get_member_list", get(get_member_list))
@@ -49,6 +50,16 @@ async fn del(
 
     Ok(ResData::success(data))
 }
+
+async fn get_mygroup(
+    ctx: Extension<Context>,
+    auth_user: AuthUser,
+) -> Result<ResData<GroupInfo>> {
+    let data = group_service::get_mygroup(&ctx.db, auth_user.id).await?;
+
+    Ok(ResData::success(data))
+}
+
 
 async fn get_group(
     ctx: Extension<Context>,
