@@ -1,10 +1,12 @@
 use sea_orm::FromQueryResult;
 use serde::{Serialize, Deserialize};
+use ts_rs::TS;
 use validator::Validate;
 
 use super::MemberInfo;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct GroupAdd {
     #[validate(length(min = 1, max = 30, message = "长度必须在1到30之间"))]
     pub group_name: String,
@@ -15,7 +17,8 @@ pub struct GroupAdd {
     pub owner_uids: Vec<u32>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct GroupUp {
     pub id: u32,
 
@@ -26,7 +29,8 @@ pub struct GroupUp {
     pub group_desc: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct GroupWithMember {
     pub id: u32,
     pub uid: u32,
@@ -39,7 +43,8 @@ pub struct GroupWithMember {
     pub member: Vec<MemberInfo>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct GroupInfo {
     pub id: u32,
     pub uid: u32,

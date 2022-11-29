@@ -1,18 +1,21 @@
 use sea_orm::{FromJsonQueryResult, FromQueryResult};
 use serde::{Serialize, Deserialize};
+use ts_rs::TS;
 use validator::{Validate, ValidationError};
 use yapi_macros::PaginatorQuery;
 
 use crate::{traits::Paginator, utils::validator::valid_one_of};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct ReqParam {
     pub name: String,
     pub example: String,
     pub desc: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct ReqQuery {
     pub name: String,
     pub value: String,
@@ -21,7 +24,8 @@ pub struct ReqQuery {
     pub required: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct ReqHeader {
     pub name: String,
     pub value: String,
@@ -30,7 +34,8 @@ pub struct ReqHeader {
     pub required: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult, Validate)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, FromJsonQueryResult, Validate, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct ReqBodyForm {
     pub name: String,
 
@@ -43,7 +48,8 @@ pub struct ReqBodyForm {
     pub required: bool,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct InterfaceCat {
     pub id: u32,
     pub uid: u32,
@@ -55,7 +61,8 @@ pub struct InterfaceCat {
     pub up_time: u32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct InterfaceCatAdd {
     #[validate(length(min = 1, max = 30, message = "长度必须在1到30之间"))]
     pub name: String,
@@ -66,7 +73,8 @@ pub struct InterfaceCatAdd {
     pub desc: String
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct InterfaceCatUp {
     pub id: u32,
 
@@ -77,7 +85,8 @@ pub struct InterfaceCatUp {
     pub desc: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct IndexItem {
     pub id: u32,
     pub index: u32,
@@ -104,7 +113,8 @@ fn valid_res_body_type_fn(value: &str) -> Result<(), ValidationError> {
 }
 
 
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct InterfaceAdd {
     pub cat_id: u32,
 
@@ -119,7 +129,8 @@ pub struct InterfaceAdd {
 
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct InterfaceUp {
     pub id: u32,
 
@@ -163,7 +174,8 @@ pub struct InterfaceUp {
     pub api_opened: Option<bool>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct InterfaceDetail {
     pub id: u32,
     pub uid: u32,
@@ -190,7 +202,8 @@ pub struct InterfaceDetail {
     pub up_time: u32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct InterfaceMenu {
     pub id: u32,
     pub uid: u32,
@@ -201,7 +214,8 @@ pub struct InterfaceMenu {
     pub up_time: u32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult)]
+#[derive(Debug, Clone, Serialize, Deserialize, FromQueryResult, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct InterfaceInfo {
     pub id: u32,
     pub uid: u32,
@@ -216,7 +230,8 @@ pub struct InterfaceInfo {
     pub up_time: u32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PaginatorQuery)]
+#[derive(Debug, Clone, Serialize, Deserialize, PaginatorQuery, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct InterfaceList {
     pub id: u32,
     page: Option<usize>,
