@@ -1,5 +1,6 @@
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use ts_rs::TS;
 use validator::Validate;
 use yapi_macros::PaginatorQuery;
 
@@ -9,7 +10,8 @@ lazy_static! {
     static ref RE_PASSWORD: Regex = Regex::new(r"[A-Za-z\d$@$!%*#?&]{8,20}").unwrap();
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct UserInfo {
     pub id: u32,
     pub username: String,
@@ -24,7 +26,8 @@ pub struct UserInfo {
     pub up_time: u32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct AuthUserInfo {
     #[serde(flatten)]
     pub user_info: UserInfo,
@@ -32,7 +35,8 @@ pub struct AuthUserInfo {
     pub token: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct UserSearch {
     pub id: u32,
     pub username: String,
@@ -42,13 +46,15 @@ pub struct UserSearch {
     pub up_time: u32,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PaginatorQuery)]
+#[derive(Debug, Clone, Serialize, Deserialize, PaginatorQuery, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct UserList {
     page: Option<usize>,
     limit: Option<usize>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct UserReg {
     #[validate(length(min = 2, max = 30, message = "长度必须在2到30之间"))]
     pub username: String,
@@ -60,7 +66,8 @@ pub struct UserReg {
     pub password: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Validate)]
+#[derive(Debug, Clone, Serialize, Deserialize, Validate, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct UserLogin {
     #[validate(length(max = 50, message = "长度最大50位"), email(message = "必须是合法的邮箱地址"))]
     pub email: String,

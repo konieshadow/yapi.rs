@@ -1,11 +1,16 @@
-import React, { FC } from 'react'
+import { useRequest } from 'ahooks';
+import { FC } from 'react'
 import {
   RouterProvider,
-  Route,
   createBrowserRouter,
 } from 'react-router-dom';
+import { userStatus } from './api/user';
 import Footer, { defaultFootList } from './components/Footer/Footer';
+import ProtectedRoute from './components/ProtectedRoute';
+import GrroupList from './containers/Group/GroupList/GroupList';
 import Home from './containers/Home/Home';
+import LoginContainer from './containers/Login/LoginContailer';
+import { UserContext } from './Contex';
 
 const router = createBrowserRouter([
   {
@@ -13,20 +18,38 @@ const router = createBrowserRouter([
     element: <Home />,
   },
   {
-    path: '/hello',
-    element: <div>Hello, world!</div>
+    path: '/login',
+    element: <LoginContainer />
   },
+  {
+    path: '/group',
+    element: (
+      <ProtectedRoute>
+        <GrroupList />
+      </ProtectedRoute>
+    )
+  }
 ]);
 
-const App: FC = () => (
-  <div className="g-main">
-    <div className="router-main">
-      <div className="router-container">
-      <RouterProvider router={router} />
-      </div>
-    </div>
-    <Footer footList={defaultFootList} />
-  </div>
-)
+const App: FC = () => {
+  const { data, loading } = useRequest(userStatus);
 
-export default App
+  return (
+    <div className="g-main">
+      <UserContext.Provider value={data}>
+        {
+          loading ? <></> : <>
+            <div className="router-main">
+              <div className="router-container">
+                <RouterProvider router={router} />
+              </div>
+            </div>
+            <Footer footList={defaultFootList} />
+          </>
+        }
+      </UserContext.Provider>
+    </div>
+  )
+};
+
+export default App;

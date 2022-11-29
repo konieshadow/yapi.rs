@@ -1,9 +1,10 @@
 import './Home.scss';
-import { FC } from 'react'
+import { FC, useContext } from 'react'
 import { Button, Card, Col, Row } from 'antd'
 import LogoSVG from '../../components/LogoSVG';
-import { Link } from 'react-router-dom';
+import { Link, Navigate, useLoaderData } from 'react-router-dom';
 import IconFont from '../../components/IconFont';
+import { UserContext } from '../../Contex';
 
 const HomeGuest: FC = () => (
   <div className="g-body">
@@ -314,32 +315,39 @@ const HomeGuest: FC = () => (
   </div>
 );
 
-const Home: FC = () => (
-  <div className="home-main">
-    <HomeGuest />
-    <div className="row-tip">
-      <div className="container">
-        <div className="tip-title">
-          <h3 className="title">准备好使用了吗？</h3>
-          <p className="desc">注册账号尽请使用吧，查看使用文档了解更多信息</p>
-        </div>
-        <div className="tip-btns">
-          <div className="btn-group">
-            <Link to="/login">
-              <Button type="primary" className="btn-home btn-login">
-                登录 / 注册
+const Home: FC = () => {
+  const userInfo = useContext(UserContext);
+  if (userInfo !== undefined) {
+    return <Navigate to="/group" replace />
+  }
+
+  return (
+    <div className="home-main">
+      <HomeGuest />
+      <div className="row-tip">
+        <div className="container">
+          <div className="tip-title">
+            <h3 className="title">准备好使用了吗？</h3>
+            <p className="desc">注册账号尽请使用吧，查看使用文档了解更多信息</p>
+          </div>
+          <div className="tip-btns">
+            <div className="btn-group">
+              <Link to="/login">
+                <Button type="primary" className="btn-home btn-login">
+                  登录 / 注册
+                </Button>
+              </Link>
+              <Button className="btn-home btn-home-normal">
+                <a target="_blank" rel="noopener noreferrer" href="https://hellosean1025.github.io/yapi">
+                  使用文档
+                </a>
               </Button>
-            </Link>
-            <Button className="btn-home btn-home-normal">
-              <a target="_blank" rel="noopener noreferrer" href="https://hellosean1025.github.io/yapi">
-                使用文档
-              </a>
-            </Button>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  )
+};
 
 export default Home;

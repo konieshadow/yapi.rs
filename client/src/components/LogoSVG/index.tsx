@@ -4,7 +4,7 @@ interface LogoSVGProps {
   length: number|string;
 }
 
-const LogoSVG: FC<LogoSVGProps> = (props: LogoSVGProps) => {
+const LogoSVG: FC<LogoSVGProps> = props => {
   let length = props.length;
   return (
     <svg className="svg" width={length} height={length} viewBox="0 0 64 64" version="1.1">

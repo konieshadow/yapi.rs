@@ -7,13 +7,15 @@ mod role_permission;
 use sea_orm::FromJsonQueryResult;
 use serde::{Serialize, Deserialize};
 
+use ts_rs::TS;
 pub use user::*;
 pub use group::*;
 pub use project::*;
 pub use interface::*;
 pub use role_permission::*;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct List<T> {
     pub list: Vec<T>,
 }
@@ -24,7 +26,8 @@ impl <T> List<T> {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct PageList<T> {
     pub count: usize,
     pub total: usize,
@@ -37,7 +40,8 @@ impl <T> PageList<T> {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct UpdateResult {
     pub modified_count: u32,
 }
@@ -54,7 +58,8 @@ impl From<sea_orm::UpdateResult> for UpdateResult {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct DeleteResult {
     pub deleted_count: u32,
 }
@@ -71,18 +76,21 @@ impl From<sea_orm::DeleteResult> for DeleteResult {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct Search {
     pub q: String,
 }
 
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct GetById {
     pub id: u32,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, FromJsonQueryResult)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, FromJsonQueryResult, TS)]
+#[ts(export, export_to = "../client/src/types/")]
 pub struct NameValue {
     pub name: String,
     pub value: String,
