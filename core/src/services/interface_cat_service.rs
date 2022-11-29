@@ -89,7 +89,10 @@ pub async fn delete_interface_cat(db: &DatabaseConnection, uid: u32, cat_id: u32
 
     // 删除分类下的接口
     interface_entity::Entity::delete_many()
-        .filter(interface_entity::Column::CatId.eq(cat_id))
+        .filter(
+            interface_entity::Column::ProjectId.eq(interface_cat.project_id)
+                .and(interface_entity::Column::CatId.eq(cat_id))
+        )
         .exec(&tx)
         .await?;
 

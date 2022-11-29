@@ -93,7 +93,8 @@ impl Entity {
     }
 
     pub async fn find_private_group<C>(db: &C, uid: u32) -> Result<Option<GroupInfo>, DbErr>
-    where C: ConnectionTrait {
+    where C: ConnectionTrait
+    {
         Entity::find()
             .filter(
                 Condition::all()

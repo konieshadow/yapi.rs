@@ -1,8 +1,8 @@
-use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Expr, Alias, Cond}, QueryOrder};
-use yapi_common::{types::{ProjectInfo, ProjectList, ProjectItem}, traits::Paginator};
+use sea_orm::{entity::prelude::*, ConnectionTrait, FromQueryResult, sea_query::{Query, Expr, Alias, Cond}, QueryOrder, QuerySelect};
+use yapi_common::{types::{ProjectInfo, ProjectList, ProjectItem, DeleteResult}, traits::Paginator};
 use yapi_macros::AutoTimestampModel;
 
-use crate::{base::MemberRole, group_member_entity, project_member_entity, project_env_entity, group_entity};
+use crate::{base::MemberRole, group_member_entity, project_member_entity, project_env_entity, group_entity, interface_cat_entity, interface_entity};
 use crate::traits::AutoTimestamp;
 
 use super::base::TypeVisible;
@@ -178,5 +178,63 @@ impl Entity {
             .collect();
 
         Ok(list)
+    }
+
+    pub async fn find_project_ids_by_group<C>(db: &C, group_id: u32) -> Result<Vec<u32>, DbErr>
+    where C: ConnectionTrait
+    {
+        #[derive(FromQueryResult)]
+        struct Result {
+            id: u32,
+        }
+
+        let ids = Entity::find()
+            .select_only()
+            .column(Column::Id)
+            .filter(Column::GroupId.eq(group_id))
+            .into_model::<Result>()
+            .all(db)
+            .await?
+            .into_iter()
+            .map(|m| m.id)
+            .collect();
+
+        Ok(ids)
+    }
+
+    pub async fn delete_project<C>(db: &C, project_id: u32) -> Result<DeleteResult, DbErr>
+    where C: ConnectionTrait
+    {
+        // 删除项目
+        let result = Entity::delete_many()
+            .filter(Column::Id.eq(project_id))
+            .exec(db)
+            .await?;
+
+        // 删除项目环境
+        project_env_entity::Entity::delete_many()
+            .filter(project_env_entity::Column::ProjectId.eq(project_id))
+            .exec(db)
+            .await?;
+
+        // 删除项目成员
+        project_member_entity::Entity::delete_many()
+            .filter(project_member_entity::Column::ProjectId.eq(project_id))
+            .exec(db)
+            .await?;
+
+        // 删除项目下的接口分类
+        interface_cat_entity::Entity::delete_many()
+            .filter(interface_cat_entity::Column::ProjectId.eq(project_id))
+            .exec(db)
+            .await?;
+
+        // 删除项目下的所有接口
+        interface_entity::Entity::delete_many()
+            .filter(interface_entity::Column::ProjectId.eq(project_id))
+            .exec(db)
+            .await?;
+
+        Ok(result.into())
     }
 }

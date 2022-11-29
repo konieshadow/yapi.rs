@@ -5,7 +5,7 @@ use sea_orm::{
 use yapi_common::types::{GroupAdd, GroupInfo, GroupUp, GroupWithMember, UpdateResult, DeleteResult, MemberInfo, AddMember, AddMemberResult, DeleteMember, ChangeMemberRole};
 use yapi_entity::{
     base::{MemberRole, TypeVisible},
-    group_entity, group_member_entity, user_entity, traits::AutoTimestamp,
+    group_entity, group_member_entity, user_entity, traits::AutoTimestamp, project_entity,
 };
 
 use crate::{error::Error, Result};
@@ -134,19 +134,10 @@ pub async fn del(db: &DatabaseConnection, uid: u32, group_id: u32) -> Result<Del
         .await?;
 
     // 删除项目
-    // TODO
-
-    // 删除项目成员
-    // TODO
-
-    // 删除项目环境
-    // TODO
-
-    // 删除项目下的接口分类
-    // TODO
-
-    // 删除项目下的所有接口
-    // TODO
+    let project_ids = project_entity::Entity::find_project_ids_by_group(&tx, group_id).await?;
+    for project_id in project_ids {
+        project_entity::Entity::delete_project(&tx, project_id).await?;
+    }
 
     tx.commit().await?;
 

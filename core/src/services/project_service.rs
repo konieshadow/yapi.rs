@@ -110,32 +110,11 @@ pub async fn del(db: &DatabaseConnection, uid: u32, project_id: u32) -> Result<D
     get_user_project_role(&tx, uid, project_id).await?.check_permission(ActionType::Danger)?;
 
     // 删除项目
-    let result = project_entity::Entity::delete_many()
-        .filter(project_entity::Column::Id.eq(project_id))
-        .exec(&tx)
-        .await?;
-
-    // 删除项目环境
-    project_env_entity::Entity::delete_many()
-        .filter(project_env_entity::Column::ProjectId.eq(project_id))
-        .exec(&tx)
-        .await?;
-
-    // 删除项目成员
-    project_member_entity::Entity::delete_many()
-        .filter(project_member_entity::Column::ProjectId.eq(project_id))
-        .exec(&tx)
-        .await?;
-
-    // 删除项目下的接口分类
-    // TODO
-
-    // 删除项目下的所有接口
-    // TODO
+    let result = project_entity::Entity::delete_project(&tx, project_id).await?;
 
     tx.commit().await?;
 
-    Ok(result.into())
+    Ok(result)
 }
 
 pub async fn get(db: &DatabaseConnection, uid: u32, project_id: u32) -> Result<ProjectDetail> {
