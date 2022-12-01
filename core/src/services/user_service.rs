@@ -135,7 +135,7 @@ pub async fn search(db: &DatabaseConnection, search: &str) -> Result<Vec<UserSea
         .limit(50)
         .all(db)
         .await?
-        .into_iter().map(|m| m.to_user_search())
+        .iter().map(|m| m.to_user_search())
         .collect();
 
     Ok(list)

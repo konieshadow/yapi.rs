@@ -105,7 +105,7 @@ pub async fn up_interface_cat_index(db: &DatabaseConnection, uid: u32, index_lis
     let tx = db.begin().await?;
 
     // 校验所传分类是否在同一个项目里
-    let mut cat_ids: Vec<u32> = index_list.clone().into_iter().map(|item| item.id).collect();
+    let mut cat_ids: Vec<u32> = index_list.iter().map(|item| item.id).collect();
     // 去重
     cat_ids.sort_unstable();
     cat_ids.dedup();

@@ -330,7 +330,7 @@ impl Entity {
         let list = Result::find_by_statement(builder.build(&stmt))
             .all(db)
             .await?
-            .into_iter()
+            .iter()
             .map(|m| m.cat_id)
             .collect();
 

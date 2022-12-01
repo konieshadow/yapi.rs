@@ -60,10 +60,10 @@ pub async fn add(
 
     // 插入分组成员
     let group_members = owner_uids
-        .into_iter()
+        .iter()
         .map(|uid| group_member_entity::ActiveModel {
             group_id: Set(group_id),
-            uid: Set(uid),
+            uid: Set(*uid),
             role: Set(MemberRole::Owner),
         });
     group_member_entity::Entity::insert_many(group_members)
@@ -199,21 +199,21 @@ pub async fn add_member(db: &DatabaseConnection, uid: u32, add_member: AddMember
     log::debug!("exist_uids: {:?}", exist_uids);
 
     // 过滤不存在的用户id
-    let no_members: Vec<u32> = add_member.member_uids.clone().into_iter().filter(|uid| !exist_uids.contains(uid)).collect();
+    let no_members: Vec<u32> = add_member.member_uids.into_iter().filter(|uid| !exist_uids.contains(uid)).collect();
     log::debug!("no_members: {:?}", no_members);
 
     // 查询组内已存在的成员
     let exist_members = group_member_entity::Entity::find_member_by_group_and_uids(&tx, add_member.id, &exist_uids).await?;
-    let exist_member_uids: Vec<u32> = exist_members.clone().into_iter().map(|m| m.id).collect();
+    let exist_member_uids: Vec<u32> = exist_members.iter().map(|m| m.id).collect();
     log::debug!("exist_member_uids: {:?}", exist_member_uids);
 
     // 插入剩余不存在的用户id作为新成员
     let add_member_uids: Vec<u32> = exist_uids.into_iter().filter(|uid| !exist_member_uids.contains(uid)).collect();
     log::debug!("add_member_uids: {:?}", add_member_uids);
     if !add_member_uids.is_empty() {
-        let models = add_member_uids.clone().into_iter().map(|uid| group_member_entity::ActiveModel {
+        let models = add_member_uids.iter().map(|uid| group_member_entity::ActiveModel {
             group_id: Set(add_member.id),
-            uid: Set(uid),
+            uid: Set(*uid),
             role: Set(member_role.clone())
         });
         group_member_entity::Entity::insert_many(models)

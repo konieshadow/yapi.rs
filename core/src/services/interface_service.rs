@@ -155,12 +155,12 @@ pub async fn list_by_menu(db: &DatabaseConnection, uid: u32, project_id: u32) ->
     // 查询所有接口
     let interface_list = interface_entity::Entity::find_interface_info_by_project(db, project_id).await?;
 
-    let mut result: Vec<InterfaceMenu> = cat.into_iter()
+    let mut result: Vec<InterfaceMenu> = cat.iter()
         .map(|m| InterfaceMenu {
             id: m.id,
             uid: m.uid,
             project_id: m.project_id,
-            name: m.name,
+            name: m.name.clone(),
             list: Vec::new(),
             add_time: m.add_time,
             up_time: m.up_time,
@@ -207,7 +207,7 @@ pub async fn up_index(db: &DatabaseConnection, uid: u32, index_list: Vec<IndexIt
     let tx = db.begin().await?;
 
     // 校验所传接口是否在同一个分类里
-    let mut interface_ids: Vec<u32> = index_list.clone().into_iter().map(|item| item.id).collect();
+    let mut interface_ids: Vec<u32> = index_list.iter().map(|item| item.id).collect();
     // 去重
     interface_ids.sort_unstable();
     interface_ids.dedup();
